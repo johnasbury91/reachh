@@ -1,0 +1,21 @@
+{
+  "name": "reachh - Reddit Marketing Agency",
+  "short_name": "reachh",
+  "description": "Reddit powers Google rankings, AI recommendations, and buying decisions. We help brands own their narrative.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/assets/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
