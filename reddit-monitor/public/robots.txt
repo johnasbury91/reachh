@@ -1,0 +1,10 @@
+# robots.txt for reachh.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://reachh.com/sitemap.xml
+
+# Crawl-delay (optional, for politeness)
+Crawl-delay: 1
