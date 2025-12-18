@@ -48,49 +48,57 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session for subscription
     console.log('Creating Stripe checkout session for:', user.email)
-    const stripe = getStripe()
-    const session = await stripe.checkout.sessions.create({
-      customer_email: user.email,
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Reachh ${SUBSCRIPTION_PLAN.name}`,
-              description: `${SUBSCRIPTION_PLAN.commentsPerMonth} comments per month`,
-            },
-            unit_amount: SUBSCRIPTION_PLAN.price,
-            recurring: {
-              interval: SUBSCRIPTION_PLAN.interval,
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        user_id: user.id,
-        plan_id: SUBSCRIPTION_PLAN.id,
-      },
-      success_url: `${APP_URL}/dashboard?subscription=success`,
-      cancel_url: `${APP_URL}/dashboard?subscription=cancelled`,
-    })
 
-    return NextResponse.json({ url: session.url })
-  } catch (error: unknown) {
-    console.error('Checkout error:', error)
-
-    // Handle Stripe errors specifically
-    if (error && typeof error === 'object' && 'type' in error) {
-      const stripeError = error as { type: string; message?: string; code?: string }
-      console.error('Stripe error type:', stripeError.type, 'code:', stripeError.code)
-      return NextResponse.json({
-        error: stripeError.message || `Stripe error: ${stripeError.type}`
-      }, { status: 500 })
+    let stripe
+    try {
+      stripe = getStripe()
+    } catch (initError) {
+      console.error('Stripe init error:', initError)
+      return NextResponse.json({ error: 'Payment system initialization failed' }, { status: 500 })
     }
 
-    const message = error instanceof Error ? error.message : 'Failed to create checkout session'
+    try {
+      const session = await stripe.checkout.sessions.create({
+        customer_email: user.email,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Reachh ${SUBSCRIPTION_PLAN.name}`,
+                description: `${SUBSCRIPTION_PLAN.commentsPerMonth} comments per month`,
+              },
+              unit_amount: SUBSCRIPTION_PLAN.price,
+              recurring: {
+                interval: SUBSCRIPTION_PLAN.interval,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          user_id: user.id,
+          plan_id: SUBSCRIPTION_PLAN.id,
+        },
+        success_url: `${APP_URL}/dashboard?subscription=success`,
+        cancel_url: `${APP_URL}/dashboard?subscription=cancelled`,
+      })
+
+      console.log('Checkout session created:', session.id)
+      return NextResponse.json({ url: session.url })
+    } catch (stripeError: unknown) {
+      console.error('Stripe API error:', stripeError)
+
+      // Extract Stripe error message
+      const err = stripeError as { message?: string; type?: string; code?: string }
+      const errorMessage = err.message || err.type || 'Stripe checkout failed'
+      return NextResponse.json({ error: errorMessage }, { status: 500 })
+    }
+  } catch (error: unknown) {
+    console.error('Unexpected checkout error:', error)
+    const message = error instanceof Error ? error.message : 'Unexpected error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
