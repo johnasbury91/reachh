@@ -28,6 +28,15 @@ function formatNumber(num: number): string {
   return num.toString()
 }
 
+type Subscription = {
+  isSubscribed: boolean
+  status: string
+  commentsRemaining: number
+  commentsTotal: number
+  currentPeriodEnd: string | null
+  hasCustomer: boolean
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
@@ -35,6 +44,10 @@ export default function DashboardPage() {
   const [activeView, setActiveView] = useState<View>('opportunities')
   const [showWelcome, setShowWelcome] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  // Subscription
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
 
   // Data
   const [opportunities, setOpportunities] = useState<RedditSearchResult[]>([])
@@ -93,6 +106,61 @@ export default function DashboardPage() {
   useEffect(() => {
     if (project) loadSavedOpportunities()
   }, [project, loadSavedOpportunities])
+
+  // Load subscription status
+  useEffect(() => {
+    const loadSubscription = async () => {
+      try {
+        const response = await fetch('/api/subscription')
+        const data = await response.json()
+        setSubscription(data)
+      } catch (error) {
+        console.error('Failed to load subscription:', error)
+      }
+    }
+    loadSubscription()
+  }, [])
+
+  // Handle subscribe
+  const handleSubscribe = async () => {
+    setSubscriptionLoading(true)
+    try {
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: 'pro_monthly' }),
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.error) {
+        alert(`Error: ${data.error}`)
+      } else {
+        alert('Failed to start checkout. Please try again.')
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to connect to payment system. Please try again.')
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
+
+  // Handle manage subscription
+  const handleManageSubscription = async () => {
+    setSubscriptionLoading(true)
+    try {
+      const response = await fetch('/api/stripe/portal', { method: 'POST' })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Portal error:', error)
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
 
   // Search Reddit
   const findOpportunities = async () => {
@@ -349,6 +417,49 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Subscription Card */}
+        <div className="p-4 pt-0">
+          {subscription?.isSubscribed ? (
+            <div className="bg-gradient-to-br from-green-900/30 to-green-950/30 rounded-xl p-4 border border-green-700/50">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-green-400">Pro Plan</p>
+                <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Active</span>
+              </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400">Comments this month</span>
+                <span className="text-sm font-semibold text-white">
+                  {subscription.commentsRemaining} / {subscription.commentsTotal}
+                </span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-1.5 mb-3">
+                <div
+                  className="bg-green-500 h-1.5 rounded-full transition-all"
+                  style={{ width: `${(subscription.commentsRemaining / subscription.commentsTotal) * 100}%` }}
+                />
+              </div>
+              <button
+                onClick={handleManageSubscription}
+                disabled={subscriptionLoading}
+                className="w-full text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                {subscriptionLoading ? 'Loading...' : 'Manage Subscription'}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-br from-orange-900/30 to-orange-950/30 rounded-xl p-4 border border-orange-700/50">
+              <p className="text-sm font-medium text-white mb-2">Upgrade to Pro</p>
+              <p className="text-xs text-gray-400 mb-3">250 comments/month for $499</p>
+              <button
+                onClick={handleSubscribe}
+                disabled={subscriptionLoading}
+                className="w-full py-2 bg-orange-600 hover:bg-orange-500 disabled:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                {subscriptionLoading ? 'Loading...' : 'Subscribe Now'}
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Progress Card */}
         <div className="p-4 pt-0">
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl p-4 border border-gray-700/50">
@@ -588,7 +699,7 @@ export default function DashboardPage() {
                 )}
 
                 {/* Empty state */}
-                {!searchLoading && project?.keywords.length > 0 && sortedOpportunities.length === 0 && (
+                {!searchLoading && (project?.keywords?.length ?? 0) > 0 && sortedOpportunities.length === 0 && (
                   <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
                     <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

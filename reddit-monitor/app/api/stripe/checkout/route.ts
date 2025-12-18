@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, getPackageById } from '@/lib/stripe'
+import { stripe, SUBSCRIPTION_PLAN } from '@/lib/stripe'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.reachh.com'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://reachh.com'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,51 +13,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { packageId } = await request.json()
+    // Check if user already has an active subscription
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('stripe_subscription_id, subscription_status')
+      .eq('id', user.id)
+      .single()
 
-    if (!packageId) {
-      return NextResponse.json({ error: 'Package ID required' }, { status: 400 })
+    if (profile?.subscription_status === 'active') {
+      return NextResponse.json({ error: 'Already subscribed' }, { status: 400 })
     }
 
-    const creditPackage = getPackageById(packageId)
-    if (!creditPackage) {
-      return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
-    }
-
-    // Create Stripe checkout session
+    // Create Stripe checkout session for subscription
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
-      mode: 'payment',
+      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: creditPackage.name,
-              description: `${creditPackage.credits} credits for Reachh`,
+              name: `Reachh ${SUBSCRIPTION_PLAN.name}`,
+              description: `${SUBSCRIPTION_PLAN.commentsPerMonth} comments per month`,
             },
-            unit_amount: creditPackage.price,
+            unit_amount: SUBSCRIPTION_PLAN.price,
+            recurring: {
+              interval: SUBSCRIPTION_PLAN.interval,
+            },
           },
           quantity: 1,
         },
       ],
       metadata: {
         user_id: user.id,
-        package_id: creditPackage.id,
-        credits: creditPackage.credits.toString(),
+        plan_id: SUBSCRIPTION_PLAN.id,
       },
-      success_url: `${APP_URL}/settings?purchase=success`,
-      cancel_url: `${APP_URL}/settings?purchase=cancelled`,
-    })
-
-    // Create pending purchase record
-    await supabase.from('credit_purchases').insert({
-      user_id: user.id,
-      stripe_payment_intent_id: session.payment_intent as string,
-      credits: creditPackage.credits,
-      amount: creditPackage.price,
-      status: 'pending',
+      success_url: `${APP_URL}/dashboard?subscription=success`,
+      cancel_url: `${APP_URL}/dashboard?subscription=cancelled`,
     })
 
     return NextResponse.json({ url: session.url })

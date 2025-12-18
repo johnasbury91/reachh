@@ -6,8 +6,8 @@ import {
   sendWinback90DaysEmail,
 } from '@/lib/email-triggers'
 
-// Use service role for cron jobs
-const supabase = createClient(
+// Use service role for cron jobs - lazy load to avoid build errors
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
       day90: 0,
       errors: [] as string[],
     }
+
+    const supabase = getSupabase()
 
     // Get all users with their last active date
     const { data: profiles, error: profilesError } = await supabase

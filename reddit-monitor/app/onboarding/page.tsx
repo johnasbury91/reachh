@@ -31,7 +31,7 @@ function generateFallbackKeywords(brandName: string, description: string): strin
     suggestions.push(`${word} for beginners`)
   })
 
-  return [...new Set(suggestions)].slice(0, 8)
+  return Array.from(new Set(suggestions)).slice(0, 8)
 }
 
 function detectCategory(description: string): string {

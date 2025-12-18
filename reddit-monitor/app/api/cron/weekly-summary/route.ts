@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendWeeklySummaryEmail } from '@/lib/email-triggers'
 
-// Use service role for cron jobs
-const supabase = createClient(
+// Use service role for cron jobs - lazy load to avoid build errors
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
       skipped: 0,
       errors: [] as string[],
     }
+
+    const supabase = getSupabase()
 
     // Get all users with their profiles
     const { data: profiles, error: profilesError } = await supabase

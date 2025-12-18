@@ -2,3 +2,13 @@
 node_modules/
 .env
 .env.local
+.next/
+
+# Spec files with secrets
+COMPLETE_BUILD_SPEC.md
+EMAIL_FLOW.md
+LAUNCH_KIT.md
+REACHH_MVP.md
+
+# Task server (separate repo)
+task-server/

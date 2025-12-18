@@ -1,13 +1,14 @@
 // Email Templates for Reachh
 
 interface TemplateData {
-  [key: string]: string | number | undefined
+  [key: string]: string | number | string[] | undefined
 }
 
 function replaceVariables(template: string, data: TemplateData): string {
   let result = template
   for (const [key, value] of Object.entries(data)) {
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), String(value ?? ''))
+    const stringValue = Array.isArray(value) ? value.join(', ') : String(value ?? '')
+    result = result.replace(new RegExp(`{{${key}}}`, 'g'), stringValue)
   }
   return result
 }
@@ -569,6 +570,47 @@ export function purchaseConfirmationEmail(data: {
       <p style="margin: 24px 0;">
         <a href="{{dashboardUrl}}" class="btn">Go to Dashboard →</a>
       </p>
+
+      <p>— The Reachh Team</p>
+    `, data),
+  }
+}
+
+export function subscriptionConfirmationEmail(data: {
+  firstName: string
+  planName: string
+  amount: number
+  commentsPerMonth: number
+  dashboardUrl: string
+}): { subject: string; html: string } {
+  return {
+    subject: 'Welcome to Reachh Pro!',
+    html: replaceVariables(`
+      <h1>Hey {{firstName}},</h1>
+      <p>You're now a <strong class="highlight">Reachh Pro</strong> member! 🎉</p>
+
+      <div class="stats-box">
+        <div class="stats-row">
+          <span class="stats-label">Plan</span>
+          <span class="stats-value">{{planName}}</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Monthly comments</span>
+          <span class="stats-value">{{commentsPerMonth}}</span>
+        </div>
+        <div class="stats-row">
+          <span class="stats-label">Monthly price</span>
+          <span class="stats-value">\${{amount}}</span>
+        </div>
+      </div>
+
+      <p>Your subscription is now active. Start finding Reddit opportunities and adding them to your comment list.</p>
+
+      <p style="margin: 24px 0;">
+        <a href="{{dashboardUrl}}" class="btn">Go to Dashboard →</a>
+      </p>
+
+      <p class="muted">You can manage your subscription anytime from the dashboard.</p>
 
       <p>— The Reachh Team</p>
     `, data),

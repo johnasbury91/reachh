@@ -21,27 +21,15 @@ export async function POST(request: NextRequest) {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `You are a Reddit marketing expert. A business needs help finding Reddit posts where they can helpfully mention their product.
-
-Brand/Product: ${brandName}
+    const prompt = `Product: ${brandName}
 Description: ${description}
 
-Generate 8-10 search keywords/phrases that people would ACTUALLY type on Reddit when looking for products or solutions like this. Focus on:
+Generate 8 Reddit search keywords people use when looking for this type of product.
 
-1. Question phrases people ask ("best X for Y", "looking for X", "X recommendations")
-2. Problem-based searches ("how to solve X", "help with X")
-3. Comparison searches ("X vs Y", "X alternative")
-4. Use case specific ("X for commuting", "X for beginners")
+Include: price ranges ("under $X"), use cases ("for [activity]"), comparisons ("X vs Y"), specific needs.
+Avoid: generic patterns like "[product] recommendation" or "best [product]".
 
-Rules:
-- Each keyword should be 2-5 words
-- Use natural Reddit language (casual, direct)
-- Focus on HIGH-INTENT keywords where someone is looking to buy or get recommendations
-- Don't include the brand name in keywords (we want to find NEW customers)
-- Make them specific enough to find relevant posts, not too generic
-
-Return ONLY a JSON array of strings, no other text. Example format:
-["best electric scooter", "scooter for commuting", "electric scooter recommendation"]`
+Return ONLY a JSON array of 8 strings.`
 
     const result = await model.generateContent(prompt)
     const response = await result.response

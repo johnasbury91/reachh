@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const getResend = () => new Resend(process.env.RESEND_API_KEY || 'dummy_key')
 
 const FROM_EMAIL = 'Reachh <hello@reachh.com>'
 const REPLY_TO = 'support@reachh.com'
@@ -14,12 +14,12 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, html, replyTo }: SendEmailParams) {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject,
       html: wrapInLayout(html),
-      reply_to: replyTo || REPLY_TO,
+      replyTo: replyTo || REPLY_TO,
     })
 
     if (error) {

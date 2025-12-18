@@ -295,6 +295,24 @@ export async function sendPaymentFailedEmail(user: User, amount: number) {
   await logEmailSent(user.id, 'payment_failed')
 }
 
+export async function sendSubscriptionConfirmationEmail(
+  user: User,
+  planName: string,
+  amount: number,
+  commentsPerMonth: number
+) {
+  const { subject, html } = templates.subscriptionConfirmationEmail({
+    firstName: getFirstName(user.full_name),
+    planName,
+    amount,
+    commentsPerMonth,
+    dashboardUrl: `${APP_URL}/dashboard`,
+  })
+
+  await sendEmail({ to: user.email, subject, html })
+  await logEmailSent(user.id, 'subscription_confirmation')
+}
+
 // ============================================
 // ADMIN NOTIFICATIONS
 // ============================================

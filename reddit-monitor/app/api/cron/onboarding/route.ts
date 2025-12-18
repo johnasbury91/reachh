@@ -8,8 +8,8 @@ import {
   sendOnboardingDay14Email,
 } from '@/lib/email-triggers'
 
-// Use service role for cron jobs
-const supabase = createClient(
+// Use service role for cron jobs - lazy load to avoid build errors
+const getSupabase = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -37,6 +37,8 @@ export async function GET(request: NextRequest) {
       day14: 0,
       errors: [] as string[],
     }
+
+    const supabase = getSupabase()
 
     // Get all users with their profiles and projects
     const { data: users, error: usersError } = await supabase
