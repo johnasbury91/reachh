@@ -6,7 +6,42 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Project, Opportunity, RedditSearchResult } from '@/lib/types'
 
-type View = 'opportunities' | 'to-comment' | 'done'
+type View = 'opportunities' | 'to-comment' | 'done' | 'tracking'
+
+type Task = {
+  id: string
+  type: 'comment' | 'post'
+  thread_url: string
+  subreddit: string
+  thread_title: string | null
+  body: string
+  title: string | null
+  status: string
+  reddit_account: string | null
+  proof_url: string | null
+  verified_at: string | null
+  rejection_reason: string | null
+  created_at: string
+  submitted_at: string | null
+  upvotes: number | null
+  notes: string | null
+}
+
+type TaskStats = {
+  total: number
+  byStatus: {
+    queued: number
+    assigned: number
+    submitted: number
+    verified: number
+    failed: number
+    rejected: number
+  }
+  byType: {
+    comment: number
+    post: number
+  }
+}
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString)
@@ -54,6 +89,12 @@ export default function DashboardPage() {
   const [toComment, setToComment] = useState<Opportunity[]>([])
   const [done, setDone] = useState<Opportunity[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+
+  // Task tracking
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null)
+  const [taskFilter, setTaskFilter] = useState<string>('all')
+  const [tasksLoading, setTasksLoading] = useState(false)
 
   // Filters
   const [sortBy, setSortBy] = useState<'recent' | 'score' | 'comments'>('score')
@@ -120,6 +161,31 @@ export default function DashboardPage() {
     }
     loadSubscription()
   }, [])
+
+  // Load tasks when tracking view is active
+  const loadTasks = useCallback(async () => {
+    setTasksLoading(true)
+    try {
+      const [tasksRes, statsRes] = await Promise.all([
+        fetch(`/api/tasks${taskFilter !== 'all' ? `?status=${taskFilter}` : ''}`),
+        fetch('/api/tasks/stats'),
+      ])
+      const tasksData = await tasksRes.json()
+      const statsData = await statsRes.json()
+      setTasks(tasksData.tasks || [])
+      setTaskStats(statsData.stats || null)
+    } catch (error) {
+      console.error('Failed to load tasks:', error)
+    } finally {
+      setTasksLoading(false)
+    }
+  }, [taskFilter])
+
+  useEffect(() => {
+    if (activeView === 'tracking') {
+      loadTasks()
+    }
+  }, [activeView, loadTasks])
 
   // Handle subscribe
   const handleSubscribe = async () => {
@@ -366,6 +432,35 @@ export default function DashboardPage() {
             )}
           </button>
 
+          {/* Task Tracking */}
+          <button
+            onClick={() => setActiveView('tracking')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+              activeView === 'tracking'
+                ? 'bg-purple-500/10 border border-purple-500/30'
+                : 'hover:bg-gray-800/50'
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              activeView === 'tracking' ? 'bg-purple-500 text-white' : 'bg-gray-800 text-gray-400'
+            }`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className={`font-medium ${activeView === 'tracking' ? 'text-purple-400' : 'text-white'}`}>
+                Task Tracking
+              </p>
+              <p className="text-xs text-gray-500">Outsourced comments</p>
+            </div>
+            {taskStats && taskStats.byStatus.submitted > 0 && (
+              <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-medium">
+                {taskStats.byStatus.submitted}
+              </span>
+            )}
+          </button>
+
           <div className="pt-4 mt-4 border-t border-gray-800">
             <Link
               href="/settings"
@@ -509,6 +604,14 @@ export default function DashboardPage() {
                   <h1 className="text-2xl font-semibold text-white">Done</h1>
                   <p className="text-gray-500 mt-1">
                     Comments you've posted. Nice work!
+                  </p>
+                </>
+              )}
+              {activeView === 'tracking' && (
+                <>
+                  <h1 className="text-2xl font-semibold text-white">Task Tracking</h1>
+                  <p className="text-gray-500 mt-1">
+                    Track outsourced comments and posts from your task server.
                   </p>
                 </>
               )}
@@ -910,6 +1013,187 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </>
+                )}
+              </motion.div>
+            )}
+
+            {/* TRACKING VIEW */}
+            {activeView === 'tracking' && (
+              <motion.div
+                key="tracking"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                {/* Stats Cards */}
+                {taskStats && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <p className="text-sm text-gray-500">Queued</p>
+                      <p className="text-2xl font-bold text-yellow-400">{taskStats.byStatus.queued}</p>
+                    </div>
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <p className="text-sm text-gray-500">Assigned</p>
+                      <p className="text-2xl font-bold text-blue-400">{taskStats.byStatus.assigned}</p>
+                    </div>
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <p className="text-sm text-gray-500">Submitted</p>
+                      <p className="text-2xl font-bold text-purple-400">{taskStats.byStatus.submitted}</p>
+                    </div>
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                      <p className="text-sm text-gray-500">Verified</p>
+                      <p className="text-2xl font-bold text-green-400">{taskStats.byStatus.verified}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Filters */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Filter:</span>
+                    <select
+                      value={taskFilter}
+                      onChange={(e) => setTaskFilter(e.target.value)}
+                      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                    >
+                      <option value="all">All Tasks</option>
+                      <option value="queued">Queued</option>
+                      <option value="assigned">Assigned</option>
+                      <option value="submitted">Submitted</option>
+                      <option value="verified">Verified</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={loadTasks}
+                    disabled={tasksLoading}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 text-white rounded-lg text-sm font-medium"
+                  >
+                    {tasksLoading ? (
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    )}
+                    Refresh
+                  </button>
+                </div>
+
+                {/* Loading */}
+                {tasksLoading && tasks.length === 0 && (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
+                    <div className="w-12 h-12 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-white mb-2">Loading tasks...</h3>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!tasksLoading && tasks.length === 0 && (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
+                    <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">No tasks yet</h3>
+                    <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                      Tasks from your outsourced comment queue will appear here once you start using the task server.
+                    </p>
+                  </div>
+                )}
+
+                {/* Task Table */}
+                {tasks.length > 0 && (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-gray-800">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subreddit</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proof</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800">
+                          {tasks.map((task) => (
+                            <tr key={task.id} className="hover:bg-gray-800/50 transition-colors">
+                              <td className="px-4 py-3">
+                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  task.type === 'comment'
+                                    ? 'bg-blue-500/20 text-blue-400'
+                                    : 'bg-orange-500/20 text-orange-400'
+                                }`}>
+                                  {task.type}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-sm text-orange-400">{task.subreddit}</span>
+                              </td>
+                              <td className="px-4 py-3 max-w-[200px]">
+                                <p className="text-sm text-white truncate" title={task.body}>
+                                  {task.body.substring(0, 50)}{task.body.length > 50 ? '...' : ''}
+                                </p>
+                                {task.thread_url && (
+                                  <a
+                                    href={task.thread_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-gray-500 hover:text-gray-400"
+                                  >
+                                    View thread →
+                                  </a>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-sm text-gray-400">{task.reddit_account || '—'}</span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  task.status === 'queued' ? 'bg-yellow-500/20 text-yellow-400' :
+                                  task.status === 'assigned' ? 'bg-blue-500/20 text-blue-400' :
+                                  task.status === 'submitted' ? 'bg-purple-500/20 text-purple-400' :
+                                  task.status === 'verified' ? 'bg-green-500/20 text-green-400' :
+                                  task.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                                  'bg-gray-500/20 text-gray-400'
+                                }`}>
+                                  {task.status}
+                                </span>
+                                {task.rejection_reason && (
+                                  <p className="text-xs text-red-400 mt-1">{task.rejection_reason}</p>
+                                )}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className="text-sm text-gray-500">{formatTimeAgo(task.created_at)}</span>
+                              </td>
+                              <td className="px-4 py-3">
+                                {task.proof_url ? (
+                                  <a
+                                    href={task.proof_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-purple-400 hover:text-purple-300"
+                                  >
+                                    View
+                                  </a>
+                                ) : (
+                                  <span className="text-sm text-gray-600">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 )}
               </motion.div>
             )}
