@@ -5,100 +5,102 @@ import { getStripe, SUBSCRIPTION_PLAN } from '@/lib/stripe'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://reachh.com'
 
 export async function POST(request: NextRequest) {
+  console.log('=== CHECKOUT v2 ===')
+
+  // 1. Check Stripe key
+  const stripeKey = process.env.STRIPE_SECRET_KEY
+  if (!stripeKey) {
+    return NextResponse.json({ error: 'E1_STRIPE_KEY_MISSING' }, { status: 500 })
+  }
+  if (!stripeKey.startsWith('sk_')) {
+    return NextResponse.json({ error: 'E2_STRIPE_KEY_BAD_FORMAT' }, { status: 500 })
+  }
+  console.log('Stripe key prefix:', stripeKey.substring(0, 8))
+
+  // 2. Init Supabase
+  let supabase
   try {
-    // Check Stripe configuration
-    const stripeKey = process.env.STRIPE_SECRET_KEY
-    if (!stripeKey) {
-      console.error('STRIPE_SECRET_KEY not configured')
-      return NextResponse.json({ error: 'Payment system not configured. Please contact support.' }, { status: 500 })
+    supabase = await createClient()
+  } catch (e) {
+    console.error('Supabase init:', e)
+    return NextResponse.json({ error: 'E3_SUPABASE_INIT' }, { status: 500 })
+  }
+
+  // 3. Get user
+  let user
+  try {
+    const { data, error } = await supabase.auth.getUser()
+    if (error || !data.user) {
+      return NextResponse.json({ error: 'E4_NOT_LOGGED_IN' }, { status: 401 })
     }
+    user = data.user
+  } catch (e) {
+    console.error('Auth:', e)
+    return NextResponse.json({ error: 'E5_AUTH_ERROR' }, { status: 500 })
+  }
+  console.log('User:', user.email)
 
-    // Validate key format
-    if (!stripeKey.startsWith('sk_')) {
-      console.error('STRIPE_SECRET_KEY has invalid format')
-      return NextResponse.json({ error: 'Invalid payment configuration. Please contact support.' }, { status: 500 })
-    }
-
-    console.log('Stripe key format valid, checking auth...')
-
-    const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      console.error('Auth error:', authError)
-      return NextResponse.json({ error: 'Please log in to subscribe' }, { status: 401 })
-    }
-
-    console.log('User authenticated:', user.id)
-
-    // Check if user already has an active subscription
-    const { data: profile, error: profileError } = await supabase
+  // 4. Check subscription status
+  try {
+    const { data: profile } = await supabase
       .from('user_profiles')
-      .select('stripe_subscription_id, subscription_status')
+      .select('subscription_status')
       .eq('id', user.id)
       .single()
 
-    if (profileError) {
-      console.error('Profile fetch error:', profileError)
-    }
-
     if (profile?.subscription_status === 'active') {
-      return NextResponse.json({ error: 'Already subscribed' }, { status: 400 })
+      return NextResponse.json({ error: 'E6_ALREADY_SUBSCRIBED' }, { status: 400 })
     }
+  } catch (e) {
+    console.error('Profile check:', e)
+    // Continue anyway - new user might not have profile
+  }
 
-    // Create Stripe checkout session for subscription
-    console.log('Creating Stripe checkout session for:', user.email)
+  // 5. Init Stripe
+  let stripe
+  try {
+    stripe = getStripe()
+  } catch (e) {
+    console.error('Stripe init:', e)
+    return NextResponse.json({ error: 'E7_STRIPE_INIT' }, { status: 500 })
+  }
 
-    let stripe
-    try {
-      stripe = getStripe()
-    } catch (initError) {
-      console.error('Stripe init error:', initError)
-      return NextResponse.json({ error: 'Payment system initialization failed' }, { status: 500 })
-    }
-
-    try {
-      const session = await stripe.checkout.sessions.create({
-        customer_email: user.email,
-        mode: 'subscription',
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: `Reachh ${SUBSCRIPTION_PLAN.name}`,
-                description: `${SUBSCRIPTION_PLAN.commentsPerMonth} comments per month`,
-              },
-              unit_amount: SUBSCRIPTION_PLAN.price,
-              recurring: {
-                interval: SUBSCRIPTION_PLAN.interval,
-              },
+  // 6. Create checkout session
+  try {
+    console.log('Creating session...')
+    const session = await stripe.checkout.sessions.create({
+      customer_email: user.email,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `Reachh ${SUBSCRIPTION_PLAN.name}`,
+              description: `${SUBSCRIPTION_PLAN.commentsPerMonth} comments per month`,
             },
-            quantity: 1,
+            unit_amount: SUBSCRIPTION_PLAN.price,
+            recurring: { interval: SUBSCRIPTION_PLAN.interval },
           },
-        ],
-        metadata: {
-          user_id: user.id,
-          plan_id: SUBSCRIPTION_PLAN.id,
+          quantity: 1,
         },
-        success_url: `${APP_URL}/dashboard?subscription=success`,
-        cancel_url: `${APP_URL}/dashboard?subscription=cancelled`,
-      })
+      ],
+      metadata: {
+        user_id: user.id,
+        plan_id: SUBSCRIPTION_PLAN.id,
+      },
+      success_url: `${APP_URL}/dashboard?subscription=success`,
+      cancel_url: `${APP_URL}/dashboard?subscription=cancelled`,
+    })
 
-      console.log('Checkout session created:', session.id)
-      return NextResponse.json({ url: session.url })
-    } catch (stripeError: unknown) {
-      console.error('Stripe API error:', stripeError)
-
-      // Extract Stripe error message
-      const err = stripeError as { message?: string; type?: string; code?: string }
-      const errorMessage = err.message || err.type || 'Stripe checkout failed'
-      return NextResponse.json({ error: errorMessage }, { status: 500 })
-    }
-  } catch (error: unknown) {
-    console.error('Unexpected checkout error:', error)
-    const message = error instanceof Error ? error.message : 'Unexpected error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.log('Session created:', session.id)
+    return NextResponse.json({ url: session.url })
+  } catch (e: unknown) {
+    console.error('Stripe create error:', e)
+    const err = e as { message?: string; type?: string }
+    return NextResponse.json({
+      error: `E8_STRIPE: ${err.message || err.type || 'unknown'}`
+    }, { status: 500 })
   }
 }
