@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const TASK_SERVER_URL = process.env.TASK_SERVER_URL || 'https://your-task-server.railway.app'
-const TASK_SERVER_PASSWORD = process.env.TASK_SERVER_PASSWORD || ''
+const TASK_SERVER_URL = process.env.TASK_SERVER_URL || ''
+const TASK_SERVER_API_KEY = process.env.TASK_SERVER_API_KEY || ''
 
 // POST: Push queued tasks to external task server
 export async function POST(request: NextRequest) {
@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!TASK_SERVER_URL || !TASK_SERVER_API_KEY) {
+      return NextResponse.json({ error: 'Task server not configured' }, { status: 500 })
     }
 
     const { taskIds, projectName } = await request.json()
@@ -34,26 +38,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No queued tasks found' }, { status: 404 })
     }
 
-    // Format tasks for task server (URL | Comment format)
-    const taskLines = tasks.map(t => `${t.thread_url} | ${t.body}`).join('\n')
+    // Format tasks for task server API
+    const formattedTasks = tasks.map(t => ({
+      type: t.type || 'comment',
+      url: t.thread_url,
+      comment: t.type === 'comment' ? t.body : undefined,
+      subreddit: t.subreddit,
+      title: t.type === 'post' ? t.title : undefined,
+      body: t.type === 'post' ? t.body : undefined,
+      external_id: t.id, // Link back to our task_queue ID
+      reddit_account: t.reddit_account,
+    }))
 
-    // Push to task server
-    const formData = new URLSearchParams()
-    formData.append('project', projectName || `project_${user.id.slice(0, 8)}`)
-    formData.append('tasks', taskLines)
-
-    const response = await fetch(`${TASK_SERVER_URL}/admin/add`, {
+    // Push to task server via API
+    const response = await fetch(`${TASK_SERVER_URL}/api/tasks`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(`admin:${TASK_SERVER_PASSWORD}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+        'X-API-Key': TASK_SERVER_API_KEY,
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        project: projectName || `reachh_${user.id.slice(0, 8)}`,
+        tasks: formattedTasks,
+      }),
     })
 
     if (!response.ok) {
-      throw new Error(`Task server returned ${response.status}`)
+      const errorText = await response.text()
+      throw new Error(`Task server returned ${response.status}: ${errorText}`)
     }
+
+    const result = await response.json()
 
     // Update task status to assigned
     await supabase
@@ -67,6 +82,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       synced: tasks.length,
+      taskServerResponse: result,
     })
   } catch (error) {
     console.error('Task sync error:', error)
@@ -84,10 +100,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Fetch submissions from task server
-    const response = await fetch(`${TASK_SERVER_URL}/admin/export`, {
+    if (!TASK_SERVER_URL || !TASK_SERVER_API_KEY) {
+      return NextResponse.json({ error: 'Task server not configured' }, { status: 500 })
+    }
+
+    // Fetch submissions from task server via API
+    const response = await fetch(`${TASK_SERVER_URL}/api/submissions`, {
       headers: {
-        'Authorization': `Basic ${Buffer.from(`admin:${TASK_SERVER_PASSWORD}`).toString('base64')}`,
+        'X-API-Key': TASK_SERVER_API_KEY,
       },
     })
 
@@ -109,11 +129,10 @@ export async function GET(request: NextRequest) {
 
     let updatedCount = 0
 
-    // Match submissions to tasks by URL
+    // Match submissions to tasks by external_id
     for (const task of assignedTasks || []) {
-      const matchingSubmission = submissions.find((s: any) =>
-        s.proof_url && task.thread_url &&
-        (s.proof_url.includes(task.thread_url.split('/comments/')[1]?.split('/')[0] || 'nomatch'))
+      const matchingSubmission = submissions.find((s: { external_id?: string }) =>
+        s.external_id === task.id
       )
 
       if (matchingSubmission) {
@@ -123,6 +142,8 @@ export async function GET(request: NextRequest) {
             status: 'submitted',
             proof_url: matchingSubmission.proof_url,
             task_code: matchingSubmission.code,
+            reddit_account: matchingSubmission.reddit_account,
+            worker_id: matchingSubmission.worker_id,
             submitted_at: matchingSubmission.submitted_at,
           })
           .eq('id', task.id)
