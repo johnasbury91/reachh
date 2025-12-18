@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe, SUBSCRIPTION_PLAN } from '@/lib/stripe'
+import { getStripe, SUBSCRIPTION_PLAN } from '@/lib/stripe'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://reachh.com'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check Stripe configuration
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY not configured')
+      return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 })
+    }
+
     const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -25,6 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session for subscription
+    const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
       mode: 'subscription',
@@ -54,8 +61,9 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Checkout error:', error)
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to create checkout session'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
