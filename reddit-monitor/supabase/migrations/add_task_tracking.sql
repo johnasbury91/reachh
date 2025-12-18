@@ -116,3 +116,13 @@ DROP TRIGGER IF EXISTS update_reddit_accounts_updated_at ON reddit_accounts;
 CREATE TRIGGER update_reddit_accounts_updated_at
   BEFORE UPDATE ON reddit_accounts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Function to decrement user credits (called by webhook)
+CREATE OR REPLACE FUNCTION decrement_user_credits(p_user_id uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE user_profiles
+  SET comments_remaining = GREATEST(0, comments_remaining - 1)
+  WHERE id = p_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

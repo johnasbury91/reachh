@@ -1030,45 +1030,52 @@ export default function DashboardPage() {
                 {taskStats && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                      <p className="text-sm text-gray-500">Queued</p>
-                      <p className="text-2xl font-bold text-yellow-400">{taskStats.byStatus.queued}</p>
+                      <p className="text-sm text-gray-500">In Queue</p>
+                      <p className="text-2xl font-bold text-blue-400">{taskStats.byStatus.queued + taskStats.byStatus.assigned}</p>
                     </div>
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                      <p className="text-sm text-gray-500">Assigned</p>
-                      <p className="text-2xl font-bold text-blue-400">{taskStats.byStatus.assigned}</p>
+                      <p className="text-sm text-gray-500">Completed</p>
+                      <p className="text-2xl font-bold text-green-400">{taskStats.byStatus.submitted + taskStats.byStatus.verified}</p>
                     </div>
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                      <p className="text-sm text-gray-500">Submitted</p>
-                      <p className="text-2xl font-bold text-purple-400">{taskStats.byStatus.submitted}</p>
+                      <p className="text-sm text-gray-500">Comments</p>
+                      <p className="text-2xl font-bold text-purple-400">{taskStats.byType.comment}</p>
                     </div>
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-                      <p className="text-sm text-gray-500">Verified</p>
-                      <p className="text-2xl font-bold text-green-400">{taskStats.byStatus.verified}</p>
+                      <p className="text-sm text-gray-500">Posts</p>
+                      <p className="text-2xl font-bold text-orange-400">{taskStats.byType.post}</p>
                     </div>
                   </div>
                 )}
 
-                {/* Filters */}
+                {/* Tabs: Queue vs Report */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500">Filter:</span>
-                    <select
-                      value={taskFilter}
-                      onChange={(e) => setTaskFilter(e.target.value)}
-                      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setTaskFilter('queue')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        taskFilter === 'queue' || taskFilter === 'all'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
                     >
-                      <option value="all">All Tasks</option>
-                      <option value="queued">Queued</option>
-                      <option value="assigned">Assigned</option>
-                      <option value="submitted">Submitted</option>
-                      <option value="verified">Verified</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
+                      📋 Queue {taskStats && `(${taskStats.byStatus.queued + taskStats.byStatus.assigned})`}
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter('report')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        taskFilter === 'report'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      ✅ Report {taskStats && `(${taskStats.byStatus.submitted + taskStats.byStatus.verified})`}
+                    </button>
                   </div>
                   <button
                     onClick={loadTasks}
                     disabled={tasksLoading}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 text-white rounded-lg text-sm font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm"
                   >
                     {tasksLoading ? (
                       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -1102,31 +1109,23 @@ export default function DashboardPage() {
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-2">No tasks yet</h3>
                     <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                      Tasks from your outsourced comment queue will appear here once you start using the task server.
+                      {taskFilter === 'report'
+                        ? 'Completed tasks will appear here once workers finish them.'
+                        : 'Add comments from Opportunities to start outsourcing.'}
                     </p>
                   </div>
                 )}
 
-                {/* Task Table */}
-                {tasks.length > 0 && (
-                  <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-gray-800">
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subreddit</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proof</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-800">
-                          {tasks.map((task) => (
-                            <tr key={task.id} className="hover:bg-gray-800/50 transition-colors">
-                              <td className="px-4 py-3">
+                {/* Queue Section - Editable */}
+                {tasks.length > 0 && (taskFilter === 'queue' || taskFilter === 'all') && (
+                  <div className="space-y-3">
+                    {tasks
+                      .filter(t => t.status === 'queued' || t.status === 'assigned')
+                      .map((task) => (
+                        <div key={task.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
                                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                                   task.type === 'comment'
                                     ? 'bg-blue-500/20 text-blue-400'
@@ -1134,64 +1133,117 @@ export default function DashboardPage() {
                                 }`}>
                                   {task.type}
                                 </span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="text-sm text-orange-400">{task.subreddit}</span>
-                              </td>
-                              <td className="px-4 py-3 max-w-[200px]">
-                                <p className="text-sm text-white truncate" title={task.body}>
-                                  {task.body.substring(0, 50)}{task.body.length > 50 ? '...' : ''}
-                                </p>
-                                {task.thread_url && (
-                                  <a
-                                    href={task.thread_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-gray-500 hover:text-gray-400"
-                                  >
-                                    View thread →
-                                  </a>
-                                )}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="text-sm text-gray-400">{task.reddit_account || '—'}</span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                  task.status === 'queued' ? 'bg-yellow-500/20 text-yellow-400' :
-                                  task.status === 'assigned' ? 'bg-blue-500/20 text-blue-400' :
-                                  task.status === 'submitted' ? 'bg-purple-500/20 text-purple-400' :
-                                  task.status === 'verified' ? 'bg-green-500/20 text-green-400' :
-                                  task.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                                  'bg-gray-500/20 text-gray-400'
+                                <span className="text-sm text-orange-400">r/{task.subreddit}</span>
+                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                  task.status === 'assigned'
+                                    ? 'bg-blue-500/20 text-blue-400'
+                                    : 'bg-yellow-500/20 text-yellow-400'
                                 }`}>
-                                  {task.status}
+                                  {task.status === 'assigned' ? '⏳ With worker' : '📋 Queued'}
                                 </span>
-                                {task.rejection_reason && (
-                                  <p className="text-xs text-red-400 mt-1">{task.rejection_reason}</p>
+                              </div>
+                              <p className="text-white text-sm mb-2 whitespace-pre-wrap">{task.body}</p>
+                              {task.thread_url && (
+                                <a
+                                  href={task.thread_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-gray-500 hover:text-gray-400"
+                                >
+                                  {task.thread_url.substring(0, 60)}...
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() => {
+                                  const newText = prompt('Edit comment:', task.body)
+                                  if (newText && newText !== task.body) {
+                                    fetch('/api/tasks/queue', {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ id: task.id, comment_text: newText }),
+                                    }).then(() => loadTasks())
+                                  }
+                                }}
+                                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm('Cancel this task?')) {
+                                    fetch(`/api/tasks/queue?id=${task.id}`, { method: 'DELETE' })
+                                      .then(() => loadTasks())
+                                  }
+                                }}
+                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {/* Report Section - Read Only */}
+                {tasks.length > 0 && taskFilter === 'report' && (
+                  <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+                    <div className="p-4 border-b border-gray-800">
+                      <h3 className="font-semibold text-white">Completed Tasks</h3>
+                      <p className="text-sm text-gray-500">Each task uses 1 credit from your plan</p>
+                    </div>
+                    <div className="divide-y divide-gray-800">
+                      {tasks
+                        .filter(t => t.status === 'submitted' || t.status === 'verified')
+                        .map((task) => (
+                          <div key={task.id} className="p-4 flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              task.status === 'verified'
+                                ? 'bg-green-500/20'
+                                : 'bg-purple-500/20'
+                            }`}>
+                              {task.status === 'verified' ? (
+                                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              ) : (
+                                <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  task.type === 'comment' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'
+                                }`}>
+                                  {task.type}
+                                </span>
+                                <span className="text-sm text-orange-400">r/{task.subreddit}</span>
+                                {task.reddit_account && (
+                                  <span className="text-xs text-gray-500">by u/{task.reddit_account}</span>
                                 )}
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="text-sm text-gray-500">{formatTimeAgo(task.created_at)}</span>
-                              </td>
-                              <td className="px-4 py-3">
-                                {task.proof_url ? (
-                                  <a
-                                    href={task.proof_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-purple-400 hover:text-purple-300"
-                                  >
-                                    View
-                                  </a>
-                                ) : (
-                                  <span className="text-sm text-gray-600">—</span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              </div>
+                              <p className="text-sm text-white line-clamp-1">{task.body}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {task.submitted_at ? formatTimeAgo(task.submitted_at) : formatTimeAgo(task.created_at)}
+                              </p>
+                            </div>
+                            {task.proof_url && (
+                              <a
+                                href={task.proof_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-sm"
+                              >
+                                View proof →
+                              </a>
+                            )}
+                          </div>
+                        ))}
                     </div>
                   </div>
                 )}
