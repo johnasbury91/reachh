@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getStripe, SUBSCRIPTION_PLAN } from '@/lib/stripe'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://reachh.com'
+// Ensure APP_URL is valid - trim and default to reachh.com
+const rawAppUrl = (process.env.NEXT_PUBLIC_APP_URL || '').trim()
+const APP_URL = rawAppUrl && rawAppUrl.startsWith('http') ? rawAppUrl : 'https://reachh.com'
 
 export async function POST(request: NextRequest) {
-  console.log('=== CHECKOUT v2 ===')
+  console.log('=== CHECKOUT v3 ===')
+  console.log('APP_URL:', APP_URL)
 
   // 1. Check Stripe key
   const stripeKey = process.env.STRIPE_SECRET_KEY
