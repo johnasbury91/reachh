@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Project, Opportunity, RedditSearchResult } from '@/lib/types'
@@ -74,7 +74,6 @@ type Subscription = {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState<View>('opportunities')
@@ -169,18 +168,21 @@ export default function DashboardPage() {
 
   // Handle subscription success redirect from Stripe
   useEffect(() => {
-    const subscriptionParam = searchParams.get('subscription')
-    if (subscriptionParam === 'success') {
-      setShowSubscriptionSuccess(true)
-      // Reload subscription after short delay for webhook to process
-      const timer = setTimeout(() => {
-        loadSubscription()
-      }, 2000)
-      // Clean URL
-      router.replace('/dashboard', { scroll: false })
-      return () => clearTimeout(timer)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const subscriptionParam = params.get('subscription')
+      if (subscriptionParam === 'success') {
+        setShowSubscriptionSuccess(true)
+        // Reload subscription after short delay for webhook to process
+        const timer = setTimeout(() => {
+          loadSubscription()
+        }, 2000)
+        // Clean URL
+        window.history.replaceState({}, '', '/dashboard')
+        return () => clearTimeout(timer)
+      }
     }
-  }, [searchParams, router, loadSubscription])
+  }, [loadSubscription])
 
   // Load tasks when tracking view is active
   const loadTasks = useCallback(async () => {
