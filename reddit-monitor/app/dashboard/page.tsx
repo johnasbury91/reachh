@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Project, Opportunity, RedditSearchResult } from '@/lib/types'
@@ -74,11 +74,13 @@ type Subscription = {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState<View>('opportunities')
   const [showWelcome, setShowWelcome] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [showSubscriptionSuccess, setShowSubscriptionSuccess] = useState(false)
 
   // Subscription
   const [subscription, setSubscription] = useState<Subscription | null>(null)
@@ -149,18 +151,36 @@ export default function DashboardPage() {
   }, [project, loadSavedOpportunities])
 
   // Load subscription status
-  useEffect(() => {
-    const loadSubscription = async () => {
-      try {
-        const response = await fetch('/api/subscription')
-        const data = await response.json()
-        setSubscription(data)
-      } catch (error) {
-        console.error('Failed to load subscription:', error)
-      }
+  const loadSubscription = useCallback(async () => {
+    try {
+      const response = await fetch('/api/subscription')
+      const data = await response.json()
+      setSubscription(data)
+      return data
+    } catch (error) {
+      console.error('Failed to load subscription:', error)
+      return null
     }
-    loadSubscription()
   }, [])
+
+  useEffect(() => {
+    loadSubscription()
+  }, [loadSubscription])
+
+  // Handle subscription success redirect from Stripe
+  useEffect(() => {
+    const subscriptionParam = searchParams.get('subscription')
+    if (subscriptionParam === 'success') {
+      setShowSubscriptionSuccess(true)
+      // Reload subscription after short delay for webhook to process
+      const timer = setTimeout(() => {
+        loadSubscription()
+      }, 2000)
+      // Clean URL
+      router.replace('/dashboard', { scroll: false })
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams, router, loadSubscription])
 
   // Load tasks when tracking view is active
   const loadTasks = useCallback(async () => {
@@ -1330,6 +1350,34 @@ export default function DashboardPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="font-medium">Comment marked as done!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Subscription Success Toast */}
+      <AnimatePresence>
+        {showSubscriptionSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 right-8 bg-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 z-50"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <span className="font-medium">Subscription activated!</span>
+              <p className="text-sm text-green-200">You now have 250 comments/month</p>
+            </div>
+            <button
+              onClick={() => setShowSubscriptionSuccess(false)}
+              className="ml-2 text-green-200 hover:text-white"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
