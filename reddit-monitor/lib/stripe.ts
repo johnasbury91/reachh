@@ -5,7 +5,14 @@ let stripeInstance: Stripe | null = null
 
 export function getStripe(): Stripe {
   if (!stripeInstance) {
-    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    // Trim the key to remove any whitespace/newlines from env var
+    const apiKey = (process.env.STRIPE_SECRET_KEY || '').trim()
+
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY is not configured')
+    }
+
+    stripeInstance = new Stripe(apiKey, {
       typescript: true,
     })
   }
