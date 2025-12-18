@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Project, Opportunity, RedditSearchResult } from '@/lib/types'
 
-type View = 'opportunities' | 'to-comment' | 'done' | 'tracking'
+type View = 'opportunities' | 'to-comment' | 'posted'
 
 type Task = {
   id: string
@@ -204,7 +204,7 @@ export default function DashboardPage() {
   }, [taskFilter])
 
   useEffect(() => {
-    if (activeView === 'tracking') {
+    if (activeView === 'posted') {
       loadTasks()
     }
   }, [activeView, loadTasks])
@@ -429,56 +429,27 @@ export default function DashboardPage() {
             )}
           </button>
 
-          {/* Step 3: Done */}
+          {/* Step 3: Posted */}
           <button
-            onClick={() => setActiveView('done')}
+            onClick={() => setActiveView('posted')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-              activeView === 'done'
+              activeView === 'posted'
                 ? 'bg-green-500/10 border border-green-500/30'
                 : 'hover:bg-gray-800/50'
             }`}
           >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-              activeView === 'done' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-400'
+              activeView === 'posted' ? 'bg-green-500 text-white' : 'bg-gray-800 text-gray-400'
             }`}>3</div>
             <div className="flex-1">
-              <p className={`font-medium ${activeView === 'done' ? 'text-green-400' : 'text-white'}`}>
-                Done
+              <p className={`font-medium ${activeView === 'posted' ? 'text-green-400' : 'text-white'}`}>
+                Posted
               </p>
-              <p className="text-xs text-gray-500">Completed comments</p>
+              <p className="text-xs text-gray-500">Completed comments & tasks</p>
             </div>
-            {done.length > 0 && (
+            {(done.length > 0 || (taskStats && taskStats.byStatus.submitted > 0)) && (
               <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full font-medium">
-                {done.length}
-              </span>
-            )}
-          </button>
-
-          {/* Task Tracking */}
-          <button
-            onClick={() => setActiveView('tracking')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-              activeView === 'tracking'
-                ? 'bg-purple-500/10 border border-purple-500/30'
-                : 'hover:bg-gray-800/50'
-            }`}
-          >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-              activeView === 'tracking' ? 'bg-purple-500 text-white' : 'bg-gray-800 text-gray-400'
-            }`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className={`font-medium ${activeView === 'tracking' ? 'text-purple-400' : 'text-white'}`}>
-                Task Tracking
-              </p>
-              <p className="text-xs text-gray-500">Outsourced comments</p>
-            </div>
-            {taskStats && taskStats.byStatus.submitted > 0 && (
-              <span className="text-xs bg-purple-500 text-white px-2 py-1 rounded-full font-medium">
-                {taskStats.byStatus.submitted}
+                {done.length + (taskStats?.byStatus.submitted || 0)}
               </span>
             )}
           </button>
@@ -621,19 +592,11 @@ export default function DashboardPage() {
                   </p>
                 </>
               )}
-              {activeView === 'done' && (
+              {activeView === 'posted' && (
                 <>
-                  <h1 className="text-2xl font-semibold text-white">Done</h1>
+                  <h1 className="text-2xl font-semibold text-white">Posted</h1>
                   <p className="text-gray-500 mt-1">
-                    Comments you've posted. Nice work!
-                  </p>
-                </>
-              )}
-              {activeView === 'tracking' && (
-                <>
-                  <h1 className="text-2xl font-semibold text-white">Task Tracking</h1>
-                  <p className="text-gray-500 mt-1">
-                    Track outsourced comments and posts from your task server.
+                    All your completed comments and posts.
                   </p>
                 </>
               )}
@@ -958,89 +921,8 @@ export default function DashboardPage() {
               </motion.div>
             )}
 
-            {/* DONE VIEW */}
-            {activeView === 'done' && (
-              <motion.div
-                key="done"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6"
-              >
-                {done.length === 0 ? (
-                  <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
-                    <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">No comments posted yet</h3>
-                    <p className="text-gray-400 mb-6 max-w-md mx-auto">
-                      Once you post comments on Reddit and mark them as done, they'll appear here.
-                    </p>
-                    <button
-                      onClick={() => setActiveView('to-comment')}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-all"
-                    >
-                      View Comment List
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Success banner */}
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-lg font-semibold text-green-400">{done.length} comment{done.length !== 1 ? 's' : ''} posted!</p>
-                          <p className="text-sm text-green-400/70">Great work engaging with your community</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Completed list */}
-                    <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-                      <div className="p-5 border-b border-gray-800">
-                        <h3 className="font-semibold text-white">Completed Comments</h3>
-                      </div>
-                      <div className="divide-y divide-gray-800">
-                        {done.map((opp) => (
-                          <div key={opp.id} className="p-5 flex items-center gap-4">
-                            <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center shrink-0">
-                              <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-white line-clamp-1">{opp.title}</p>
-                              <p className="text-sm text-gray-500 mt-1">{opp.subreddit}</p>
-                            </div>
-                            <a
-                              href={opp.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-gray-400 hover:text-white transition-colors"
-                            >
-                              View thread →
-                            </a>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {/* TRACKING VIEW */}
-            {activeView === 'tracking' && (
+            {/* POSTED VIEW (combines Done + Task Tracking) */}
+            {activeView === 'posted' && (
               <motion.div
                 key="tracking"
                 initial={{ opacity: 0, y: 10 }}
