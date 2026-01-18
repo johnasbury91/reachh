@@ -9,6 +9,21 @@ from config import settings
 from models import DolphinProfile
 
 
+def format_proxy(proxy_data: dict | None) -> str:
+    """Format proxy for display. Returns 'None' if no proxy."""
+    if not proxy_data:
+        return "None"
+
+    host = proxy_data.get("host", "")
+    port = proxy_data.get("port", "")
+    proxy_type = proxy_data.get("type", "http")
+
+    if not host:
+        return "None"
+
+    return f"{proxy_type}://{host}:{port}"
+
+
 class DolphinClient:
     """Async client for Dolphin Anty API."""
 
@@ -88,6 +103,10 @@ class DolphinClient:
                 # Get owner from user_map
                 owner = user_map.get(p.get("userId"), "Unknown")
 
+                # Extract proxy info from profile
+                proxy_data = p.get("proxy", {})
+                proxy_str = format_proxy(proxy_data) if proxy_data else "None"
+
                 profiles.append(
                     DolphinProfile(
                         id=str(p["id"]),
@@ -96,6 +115,7 @@ class DolphinClient:
                         notes=notes_content,
                         created_at=p.get("created_at", ""),
                         updated_at=p.get("updated_at", ""),
+                        proxy=proxy_str,
                     )
                 )
 
