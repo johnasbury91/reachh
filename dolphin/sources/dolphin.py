@@ -5,8 +5,8 @@ Async client for fetching browser profiles and team users.
 
 import httpx
 
-from ..config import settings
-from ..models import DolphinProfile
+from config import settings
+from models import DolphinProfile
 
 
 class DolphinClient:

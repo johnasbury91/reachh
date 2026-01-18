@@ -8,8 +8,8 @@ import random
 
 import httpx
 
-from ..config import settings
-from ..models import RedditStatus
+from config import settings
+from models import RedditStatus
 
 
 class RedditChecker:
