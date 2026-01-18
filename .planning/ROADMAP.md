@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Google Sheets Sync** - Automatic sync with karma tracking and proxy columns
 - [x] **Phase 3: Enhanced Detection** - Shadowban detection and proxy health monitoring
 - [x] **Phase 4: Automation** - Scheduled jobs for hands-off operation
-- [ ] **Phase 5: Alerts & Reporting** - Notifications on bans/issues, weekly karma summaries
+- [x] **Phase 5: Alerts & Reporting** - Notifications on bans/issues, weekly karma summaries
 
 ## Phase Details
 
@@ -92,9 +92,9 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Notification infrastructure (state tracking, macOS/Slack alerts)
-- [ ] 05-02-PLAN.md — Integrate alerts into tracker (detect and notify on problems)
-- [ ] 05-03-PLAN.md — Weekly karma report (velocity tracking, top/bottom performers)
+- [x] 05-01-PLAN.md — Notification infrastructure (state tracking, macOS/Slack alerts)
+- [x] 05-02-PLAN.md — Integrate alerts into tracker (detect and notify on problems)
+- [x] 05-03-PLAN.md — Weekly karma report (velocity tracking, top/bottom performers)
 
 ## Progress
 
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Google Sheets Sync | 3/3 | Complete | 2026-01-18 |
 | 3. Enhanced Detection | 3/3 | Complete | 2026-01-18 |
 | 4. Automation | 1/1 | Complete | 2026-01-18 |
-| 5. Alerts & Reporting | 0/3 | Planned | - |
+| 5. Alerts & Reporting | 3/3 | Complete | 2026-01-18 |
 
 ---
 *Roadmap created: 2026-01-18*
