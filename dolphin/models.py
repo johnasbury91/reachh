@@ -4,7 +4,40 @@ Uses dataclasses for simple data containers.
 """
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Literal
+
+
+def calculate_account_age(created_utc: float) -> str:
+    """Convert Reddit created_utc timestamp to human-readable age.
+
+    Args:
+        created_utc: Unix timestamp from Reddit API (UTC)
+
+    Returns:
+        Human-readable age like "2y 3m", "6m", or "15d"
+        Returns "N/A" for invalid/zero timestamps
+    """
+    if created_utc <= 0:
+        return "N/A"
+
+    created = datetime.fromtimestamp(created_utc, tz=timezone.utc)
+    now = datetime.now(tz=timezone.utc)
+    delta = now - created
+
+    days = delta.days
+    if days < 0:
+        return "N/A"  # Future date (shouldn't happen)
+
+    years = days // 365
+    months = (days % 365) // 30
+
+    if years > 0:
+        return f"{years}y {months}m"
+    elif months > 0:
+        return f"{months}m"
+    else:
+        return f"{days}d"
 
 
 @dataclass
