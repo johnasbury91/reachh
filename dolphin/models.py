@@ -67,6 +67,15 @@ class RedditStatus:
 
 
 @dataclass
+class ProxyHealth:
+    """Result from proxy health check."""
+
+    status: Literal["pass", "fail", "blocked", "N/A"]
+    proxy_ip: str | None = None  # IP as seen by target (if available)
+    error: str | None = None  # Error message if failed
+
+
+@dataclass
 class AccountResult:
     """Combined result for tracker output."""
 
@@ -75,3 +84,4 @@ class AccountResult:
     category: str
     karma_change: int = 0
     checked_at: str = ""
+    proxy_health: ProxyHealth | None = None
