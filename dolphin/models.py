@@ -58,7 +58,7 @@ class RedditStatus:
     """Status result from Reddit account check."""
 
     username: str
-    status: Literal["active", "suspended", "not_found", "rate_limited", "error"]
+    status: Literal["active", "suspended", "not_found", "rate_limited", "error", "shadowbanned"]
     total_karma: int = 0
     comment_karma: int = 0
     link_karma: int = 0
