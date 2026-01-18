@@ -16,11 +16,13 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
+from alerts import notify_bans, notify_proxy_failures
 from config import setup_logging
 from models import DolphinProfile, RedditStatus, AccountResult, ProxyHealth
 from sheets_sync import sync_to_sheet
 from sources import DolphinClient, RedditChecker
 from sources.proxy_health import ProxyHealthChecker
+from state import load_state, save_state, build_current_state, detect_changes
 
 # Module-level logger
 logger = logging.getLogger("tracker")
@@ -155,6 +157,27 @@ async def run_tracker(limit: int | None = None) -> int:
 
         # Save history
         save_history(history)
+
+        # State tracking and alerts
+        try:
+            previous_state = load_state()
+            current_state = build_current_state(results)
+            changes = detect_changes(previous_state, current_state)
+
+            # Send alerts for new problems
+            if changes["new_bans"]:
+                logger.warning(f"New bans detected: {changes['new_bans']}")
+                notify_bans(changes["new_bans"])
+
+            if changes["new_proxy_failures"]:
+                logger.warning(f"New proxy failures detected: {changes['new_proxy_failures']}")
+                notify_proxy_failures(changes["new_proxy_failures"])
+
+            # Save current state for next run
+            save_state(current_state)
+        except Exception as e:
+            logger.warning(f"Alerting failed: {e}")
+            # Continue with CSV export and Sheets sync
 
         # Export to CSV
         csv_file = Path(__file__).parent / f"tracking_{today}.csv"
