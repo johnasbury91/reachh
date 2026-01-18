@@ -28,12 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Request delays are randomized (not predictable 3-second intervals)
   3. Script backs off gracefully when Reddit rate-limits (no crashes, no bans)
   4. All credentials live in .env file (JWT token, API keys removed from code)
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 01-01: Security hardening (credentials to .env, remove exposed JWT)
-- [ ] 01-02: Core tracking (Dolphin API, Reddit karma/status, freelancer mapping)
-- [ ] 01-03: Anti-detection (randomized delays, rate limit handling)
+- [ ] 01-01-PLAN.md - Security hardening (credentials to .env, pydantic-settings config)
+- [ ] 01-02-PLAN.md - Core modules (DolphinClient, RedditChecker with anti-detection)
+- [ ] 01-03-PLAN.md - Integration (refactor tracker.py to use async modules)
 
 ### Phase 2: Google Sheets Sync
 **Goal**: Account data syncs to Google Sheets automatically with proxy and karma tracking
@@ -87,10 +87,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Security | 0/3 | Not started | - |
+| 1. Foundation & Security | 0/3 | Planned | - |
 | 2. Google Sheets Sync | 0/3 | Not started | - |
 | 3. Enhanced Detection | 0/3 | Not started | - |
 | 4. Automation | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-18*
+*Phase 1 planned: 2026-01-18*
