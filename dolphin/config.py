@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     google_credentials_json: SecretStr | None = None
     google_sheets_id: str | None = None
 
+    # Slack notifications (optional - for team alerts)
+    slack_webhook_url: str | None = None
+
     @field_validator("dolphin_api_key", mode="before")
     @classmethod
     def validate_api_key(cls, v: str) -> str:
