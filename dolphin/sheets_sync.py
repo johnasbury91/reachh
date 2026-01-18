@@ -21,6 +21,7 @@ HEADERS = [
     "comment_karma",
     "link_karma",
     "owner",
+    "proxy",
     "karma_delta",
     "checked_at",
 ]
@@ -44,6 +45,7 @@ def _to_row(result: AccountResult) -> list:
         result.reddit.comment_karma,
         result.reddit.link_karma,
         result.profile.owner,
+        result.profile.proxy or "None",
         karma_delta,
         result.checked_at or datetime.now().isoformat(),
     ]
@@ -59,7 +61,7 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
 
     if not first_row or first_row != HEADERS:
         # Clear first row and write headers
-        worksheet.update("A1:I1", [HEADERS])
+        worksheet.update("A1:J1", [HEADERS])
 
 
 def sync_to_sheet(results: list[AccountResult]) -> dict:
@@ -116,7 +118,7 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
             # Update existing row
             row_num = existing_ids[profile_id]
             updates.append({
-                "range": f"A{row_num}:I{row_num}",
+                "range": f"A{row_num}:J{row_num}",
                 "values": [row_data],
             })
         else:
