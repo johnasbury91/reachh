@@ -45,12 +45,12 @@ Plans:
   3. Karma delta column shows daily change from previous run
   4. Sheet updates are batched (no API quota errors on large farms)
   5. Proxy associated with each account appears in its own column
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01: Google Sheets integration (gspread setup, authentication, sheet structure)
-- [ ] 02-02: Data enrichment (account age, karma delta calculation)
-- [ ] 02-03: Proxy column integration (extract proxy from Dolphin, display in sheet)
+- [ ] 02-01-PLAN.md — Google Sheets integration (gspread setup, authentication, batch upsert)
+- [ ] 02-02-PLAN.md — Proxy column (extract proxy from Dolphin API, display in sheet)
+- [ ] 02-03-PLAN.md — Account age and karma delta (calculate age, format delta with +/-)
 
 ### Phase 3: Enhanced Detection
 **Goal**: Detect shadowbans and verify proxy health across multiple providers
@@ -88,10 +88,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Security | 3/3 | Complete | 2026-01-18 |
-| 2. Google Sheets Sync | 0/3 | Not started | - |
+| 2. Google Sheets Sync | 0/3 | Planned | - |
 | 3. Enhanced Detection | 0/3 | Not started | - |
 | 4. Automation | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-18*
 *Phase 1 planned: 2026-01-18*
+*Phase 2 planned: 2026-01-18*
