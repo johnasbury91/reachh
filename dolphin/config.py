@@ -3,15 +3,20 @@ Application settings loaded from environment variables and .env file.
 Uses pydantic-settings for type-safe configuration.
 """
 
+from pathlib import Path
+
 from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Resolve .env path relative to this file's directory
+_ENV_FILE = Path(__file__).parent / ".env"
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables and .env file."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",  # Ignore unknown env vars
