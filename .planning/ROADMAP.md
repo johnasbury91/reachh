@@ -60,12 +60,12 @@ Plans:
   1. Shadowbanned accounts show "shadowbanned" status (not falsely marked as "active")
   2. Proxy health column shows whether proxy can reach Reddit (pass/fail)
   3. Script works with multiple proxy providers (Decodo + at least one other)
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 03-01: Shadowban detection (check if posts/comments are visible to others)
-- [ ] 03-02: Proxy health testing (verify Reddit reachability per proxy)
-- [ ] 03-03: Multi-provider support (abstract proxy interface, add providers)
+- [ ] 03-01-PLAN.md — Shadowban detection (check if posts/comments are visible to others)
+- [ ] 03-02-PLAN.md — Proxy health testing (verify Reddit reachability per proxy)
+- [ ] 03-03-PLAN.md — Multi-provider support (abstract proxy interface, add providers)
 
 ### Phase 4: Automation
 **Goal**: Script runs on schedule without manual intervention
@@ -96,3 +96,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 *Roadmap created: 2026-01-18*
 *Phase 1 planned: 2026-01-18*
 *Phase 2 planned: 2026-01-18*
+*Phase 3 planned: 2026-01-18*
