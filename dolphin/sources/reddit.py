@@ -5,6 +5,7 @@ Uses randomized delays and exponential backoff for rate limit handling.
 
 import asyncio
 import random
+from typing import Literal
 
 import httpx
 
@@ -61,9 +62,13 @@ class RedditChecker:
 
                 if response.status_code == 200:
                     data = response.json().get("data", {})
+
+                    # Check for shadowban (profile exists but posts hidden)
+                    shadowban_status = await self.check_shadowban(username)
+
                     return RedditStatus(
                         username=username,
-                        status="active",
+                        status=shadowban_status,
                         total_karma=data.get("total_karma", 0),
                         comment_karma=data.get("comment_karma", 0),
                         link_karma=data.get("link_karma", 0),
@@ -113,6 +118,65 @@ class RedditChecker:
 
         # Exhausted all retries
         return RedditStatus(username=username, status="rate_limited")
+
+    async def check_shadowban(self, username: str) -> Literal["active", "shadowbanned"]:
+        """
+        Detect if an active account is actually shadowbanned.
+
+        Only call this for accounts that passed basic check_account() as "active".
+        Shadowban = profile exists but posts are not publicly visible.
+
+        Returns:
+            "active" - account is truly active (or has no posts to verify)
+            "shadowbanned" - profile exists but posts are hidden
+        """
+        if not self.client:
+            raise RuntimeError("Use async context manager")
+
+        # Step 1: Fetch user's submitted posts
+        submitted_url = f"https://www.reddit.com/user/{username}/submitted.json"
+
+        try:
+            await self._random_delay()
+            submitted_resp = await self.client.get(submitted_url)
+
+            if submitted_resp.status_code == 429:
+                # Rate limited - default to active (conservative)
+                return "active"
+
+            if submitted_resp.status_code != 200:
+                # Can't check - default to active (conservative)
+                return "active"
+
+            posts = submitted_resp.json().get("data", {}).get("children", [])
+
+            if not posts:
+                # No posts to verify - cannot detect shadowban
+                return "active"
+
+            # Step 2: Check if most recent post is publicly visible
+            recent_post = posts[0].get("data", {})
+            permalink = recent_post.get("permalink")
+
+            if not permalink:
+                return "active"
+
+            # Step 3: Verify post visibility via direct permalink
+            post_url = f"https://www.reddit.com{permalink}.json"
+
+            await self._random_delay()
+            post_resp = await self.client.get(post_url)
+
+            if post_resp.status_code == 404:
+                # Post exists on profile but not publicly visible = shadowbanned
+                return "shadowbanned"
+
+            # Post is publicly visible - account is truly active
+            return "active"
+
+        except httpx.RequestError:
+            # Network error - default to active (conservative)
+            return "active"
 
     async def check_accounts(self, usernames: list[str]) -> list[RedditStatus]:
         """Check multiple Reddit accounts.
