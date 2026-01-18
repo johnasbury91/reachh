@@ -21,7 +21,11 @@ def format_proxy(proxy_data: dict | None) -> str:
     if not host:
         return "None"
 
-    return f"{proxy_type}://{host}:{port}"
+    # Handle missing port gracefully
+    if port:
+        return f"{proxy_type}://{host}:{port}"
+    else:
+        return f"{proxy_type}://{host}"
 
 
 class DolphinClient:
