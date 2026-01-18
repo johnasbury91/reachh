@@ -4,6 +4,8 @@ Uses pydantic-settings for type-safe configuration.
 """
 
 import json
+import logging
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 from pydantic import SecretStr, field_validator
@@ -68,3 +70,50 @@ settings = Settings()
 # These allow existing code to continue working without modification
 DOLPHIN_API_KEY = settings.dolphin_api_key.get_secret_value()
 DOLPHIN_API_URL = settings.dolphin_api_url
+
+
+def setup_logging() -> logging.Logger:
+    """
+    Configure logging for scheduled tracker execution.
+
+    Creates file handler with daily rotation (30-day retention) and console handler.
+    Returns logger named "tracker" at INFO level.
+    """
+    # Create logs directory if not exists
+    logs_dir = Path(__file__).parent / "logs"
+    logs_dir.mkdir(exist_ok=True)
+
+    # Get or create logger
+    logger = logging.getLogger("tracker")
+
+    # Guard against duplicate handlers (if called multiple times)
+    if logger.handlers:
+        return logger
+
+    logger.setLevel(logging.INFO)
+
+    # Formatter with timestamp
+    formatter = logging.Formatter(
+        fmt="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
+    # File handler with daily rotation and 30-day retention
+    log_file = logs_dir / "tracker.log"
+    file_handler = TimedRotatingFileHandler(
+        filename=str(log_file),
+        when="midnight",
+        interval=1,
+        backupCount=30,
+        encoding="utf-8",
+    )
+    file_handler.suffix = "%Y-%m-%d"
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # Console handler (for launchd capture and interactive use)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    return logger
