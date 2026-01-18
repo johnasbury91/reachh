@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 2 Complete - Ready for Phase 3
+**Current focus:** Phase 3 - Enhanced Detection (Plan 1 of 3 complete)
 
 ## Current Position
 
-Phase: 2 of 4 (Google Sheets Sync) - COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 02-03-PLAN.md (Account Age + Karma Delta)
+Phase: 3 of 4 (Enhanced Detection)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 03-01-PLAN.md (Shadowban Detection)
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 13.3 min
-- Total execution time: 1.3 hours
+- Total plans completed: 7
+- Average duration: 12.3 min
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
@@ -29,12 +29,12 @@ Progress: [██████░░░░] 60%
 |-------|-------|-------|----------|
 | 1. Foundation | 3/3 | 13 min | 4.3 min |
 | 2. Sheets Sync | 3/3 | 67 min | 22.3 min |
-| 3. Detection | 0/3 | - | - |
+| 3. Detection | 1/3 | 6 min | 6 min |
 | 4. Automation | 0/1 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 28 min, 20 min, 19 min
-- Trend: Feature plans averaging ~22 min
+- Last 5 plans: 28 min, 20 min, 19 min, 6 min
+- Trend: Detection plans completing faster (simpler scope)
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [02-03]: Account age format: 'Xy Ym' for years, 'Xm' for months, 'Xd' for days
 - [02-03]: N/A for zero/negative timestamps (suspended/not_found accounts)
 - [02-03]: Account age column positioned after karma columns, before owner
+- [03-01]: Check only most recent post to minimize API requests
+- [03-01]: Default to active on errors (conservative - avoid false positives)
+- [03-01]: Only call check_shadowban() for accounts that pass about.json
 
 ### Pending Todos
 
@@ -101,8 +104,18 @@ All Phase 2 requirements verified:
 
 Google Sheet columns: profile_id, username, status, total_karma, comment_karma, link_karma, account_age, owner, proxy, karma_delta, checked_at
 
+## Phase 3 Progress
+
+| Requirement | Status |
+|-------------|--------|
+| Shadowban detection | PASS |
+| Proxy health check | PENDING |
+| Multi-provider support | PENDING |
+
+RedditStatus now includes "shadowbanned" as valid status. Detection via submitted.json + permalink visibility.
+
 ## Session Continuity
 
-Last session: 2026-01-18 09:44 UTC
-Stopped at: Completed 02-03-PLAN.md (Account Age + Karma Delta)
+Last session: 2026-01-18 09:56 UTC
+Stopped at: Completed 03-01-PLAN.md (Shadowban Detection)
 Resume file: None
