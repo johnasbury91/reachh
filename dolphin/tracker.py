@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 from models import DolphinProfile, RedditStatus, AccountResult
+from sheets_sync import sync_to_sheet
 from sources import DolphinClient, RedditChecker
 
 
@@ -167,6 +168,15 @@ async def run_tracker(limit: int | None = None) -> list[AccountResult]:
             writer.writeheader()
             writer.writerows(csv_rows)
         print(f"\nResults saved to {csv_file}")
+
+    # Sync to Google Sheets
+    try:
+        print("\nSyncing to Google Sheets...")
+        stats = sync_to_sheet(results)
+        print(f"Sheets sync complete: {stats['updated']} updated, {stats['inserted']} inserted")
+    except Exception as e:
+        print(f"Warning: Sheets sync failed: {e}")
+        # Don't fail the whole run - CSV export already succeeded
 
     # Print summary by category
     categories = Counter(r.category for r in results)
