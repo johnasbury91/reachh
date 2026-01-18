@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 3 - Enhanced Detection (Plan 1 of 3 complete)
+**Current focus:** Phase 3 - Enhanced Detection (Plan 2 of 3 complete)
 
 ## Current Position
 
 Phase: 3 of 4 (Enhanced Detection)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-18 - Completed 03-01-PLAN.md (Shadowban Detection)
+Last activity: 2026-01-18 - Completed 03-02-PLAN.md (Proxy Health Testing)
 
-Progress: [███████░░░] 70%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 12.3 min
-- Total execution time: 1.4 hours
+- Total plans completed: 8
+- Average duration: 11.1 min
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -29,12 +29,12 @@ Progress: [███████░░░] 70%
 |-------|-------|-------|----------|
 | 1. Foundation | 3/3 | 13 min | 4.3 min |
 | 2. Sheets Sync | 3/3 | 67 min | 22.3 min |
-| 3. Detection | 1/3 | 6 min | 6 min |
+| 3. Detection | 2/3 | 8 min | 4 min |
 | 4. Automation | 0/1 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 28 min, 20 min, 19 min, 6 min
-- Trend: Detection plans completing faster (simpler scope)
+- Last 5 plans: 20 min, 19 min, 6 min, 2 min
+- Trend: Detection plans completing fast (clean scope, no deviations)
 
 *Updated after each plan completion*
 
@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - [03-01]: Check only most recent post to minimize API requests
 - [03-01]: Default to active on errors (conservative - avoid false positives)
 - [03-01]: Only call check_shadowban() for accounts that pass about.json
+- [03-02]: Test Reddit reachability via robots.txt (lightweight, always exists)
+- [03-02]: 403/429 = blocked (Reddit blocking IP), connection errors = fail
+- [03-02]: N/A status for accounts without proxy configured
+- [03-02]: proxy_health column after proxy, before karma_delta (12 columns total)
 
 ### Pending Todos
 
@@ -109,13 +113,13 @@ Google Sheet columns: profile_id, username, status, total_karma, comment_karma, 
 | Requirement | Status |
 |-------------|--------|
 | Shadowban detection | PASS |
-| Proxy health check | PENDING |
+| Proxy health check | PASS |
 | Multi-provider support | PENDING |
 
-RedditStatus now includes "shadowbanned" as valid status. Detection via submitted.json + permalink visibility.
+Google Sheet now has 12 columns (A-L): profile_id, username, status, total_karma, comment_karma, link_karma, account_age, owner, proxy, proxy_health, karma_delta, checked_at
 
 ## Session Continuity
 
-Last session: 2026-01-18 09:56 UTC
-Stopped at: Completed 03-01-PLAN.md (Shadowban Detection)
+Last session: 2026-01-18 11:14 UTC
+Stopped at: Completed 03-02-PLAN.md (Proxy Health Testing)
 Resume file: None
