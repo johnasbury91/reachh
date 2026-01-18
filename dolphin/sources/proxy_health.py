@@ -4,9 +4,9 @@ Tests against Reddit specifically, not generic endpoints.
 """
 
 import httpx
-from urllib.parse import quote, urlparse, urlunparse
 
 from models import ProxyHealth
+from sources.proxies import normalize_proxy
 
 
 class ProxyHealthChecker:
@@ -14,47 +14,6 @@ class ProxyHealthChecker:
 
     # User agent for Reddit requests
     USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-
-    def _encode_proxy_url(self, proxy_url: str) -> str:
-        """URL-encode credentials in proxy URL to handle special characters.
-
-        Args:
-            proxy_url: Proxy URL (e.g., "http://user:p@ss@host:port")
-
-        Returns:
-            URL with encoded credentials (e.g., "http://user:p%40ss@host:port")
-        """
-        parsed = urlparse(proxy_url)
-
-        # If no credentials, return as-is
-        if not parsed.username:
-            return proxy_url
-
-        # Encode username and password
-        encoded_username = quote(parsed.username, safe="")
-        encoded_password = quote(parsed.password, safe="") if parsed.password else ""
-
-        # Reconstruct netloc with encoded credentials
-        if encoded_password:
-            auth = f"{encoded_username}:{encoded_password}"
-        else:
-            auth = encoded_username
-
-        # Rebuild netloc: auth@host:port
-        if parsed.port:
-            netloc = f"{auth}@{parsed.hostname}:{parsed.port}"
-        else:
-            netloc = f"{auth}@{parsed.hostname}"
-
-        # Reconstruct full URL
-        return urlunparse((
-            parsed.scheme,
-            netloc,
-            parsed.path,
-            parsed.params,
-            parsed.query,
-            parsed.fragment,
-        ))
 
     async def check(self, proxy_url: str, timeout: float = 10.0) -> ProxyHealth:
         """
@@ -71,12 +30,13 @@ class ProxyHealthChecker:
         if not proxy_url or proxy_url == "None":
             return ProxyHealth(status="N/A")
 
-        # Encode credentials to handle special characters
-        encoded_proxy = self._encode_proxy_url(proxy_url)
+        # Normalize URL using provider (handles credential encoding)
+        config = normalize_proxy(proxy_url)
+        normalized_url = config.url if config else proxy_url
 
         try:
             async with httpx.AsyncClient(
-                proxy=encoded_proxy,
+                proxy=normalized_url,
                 timeout=httpx.Timeout(timeout),
             ) as client:
                 # Test Reddit reachability via robots.txt (lightweight, always exists)
