@@ -1,0 +1,7 @@
+# Phase 1: Foundation & Security
+httpx>=0.28
+pydantic>=2.0
+pydantic-settings>=2.0
+
+# Existing dependencies (from original tracker.py)
+requests>=2.28
