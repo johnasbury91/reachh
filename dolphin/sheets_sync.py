@@ -76,6 +76,51 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
         worksheet.update("A1:L1", [HEADERS])
 
 
+def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResult]) -> None:
+    """Update the summary row (row 2) with aggregate stats."""
+    # Count statuses
+    status_counts: dict[str, int] = {}
+    proxy_fail_count = 0
+    total_karma = 0
+    total_delta = 0
+
+    for result in results:
+        status = result.reddit.status
+        status_counts[status] = status_counts.get(status, 0) + 1
+        total_karma += result.reddit.total_karma or 0
+        total_delta += result.karma_change or 0
+
+        if result.proxy_health and result.proxy_health.status != "pass":
+            proxy_fail_count += 1
+
+    total = len(results)
+    active = status_counts.get("active", 0)
+    suspended = status_counts.get("suspended", 0)
+    shadowbanned = status_counts.get("shadowbanned", 0)
+    not_found = status_counts.get("not_found", 0)
+
+    # Format delta with sign
+    delta_str = f"+{total_delta}" if total_delta >= 0 else str(total_delta)
+
+    # Build summary cells matching header columns
+    summary_row = [
+        "SUMMARY",  # profile_id column
+        f"{total} accounts",  # username column
+        f"{active} active / {suspended} suspended / {shadowbanned} shadow / {not_found} missing",  # status
+        total_karma,  # total_karma
+        "",  # comment_karma
+        "",  # link_karma
+        "",  # account_age
+        "",  # owner
+        f"{proxy_fail_count} failing" if proxy_fail_count else "All OK",  # proxy
+        "",  # proxy_health
+        delta_str,  # karma_delta
+        datetime.now().strftime("%Y-%m-%d %H:%M"),  # checked_at
+    ]
+
+    worksheet.update("A2:L2", [summary_row])
+
+
 def sync_to_sheet(results: list[AccountResult]) -> dict:
     """
     Sync account results to Google Sheets.
@@ -114,9 +159,14 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
     _ensure_headers(worksheet)
 
     # Read existing data (single API call)
-    existing = worksheet.get_all_records(default_blank="")
-    existing_ids = {str(row["profile_id"]): idx + 2 for idx, row in enumerate(existing)}
-    # idx + 2 because: row 1 is headers, enumerate starts at 0
+    # Row 1 = headers, Row 2 = summary, Row 3+ = data
+    all_values = worksheet.get_all_values()
+
+    # Build existing_ids from row 3 onwards (index 2+, skipping header and summary)
+    existing_ids: dict[str, int] = {}
+    for idx, row in enumerate(all_values[2:], start=3):  # Start at row 3
+        if row and row[0] and row[0] != "SUMMARY":  # Has profile_id and not summary
+            existing_ids[str(row[0])] = idx
 
     # Partition into updates vs inserts
     updates = []
@@ -144,6 +194,9 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
     # Batch append new rows (single API call)
     if inserts:
         worksheet.append_rows(inserts)
+
+    # Update summary row with aggregate stats
+    _update_summary_row(worksheet, results)
 
     return {
         "updated": len(updates),
