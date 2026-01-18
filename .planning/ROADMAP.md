@@ -89,12 +89,12 @@ Plans:
   1. Receive notification when new bans/suspensions are detected
   2. Receive notification when proxy health fails
   3. Weekly karma summary shows top/bottom performers
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — Ban/suspension alerts (detect new issues, send notification)
-- [ ] 05-02-PLAN.md — Proxy failure alerts (notify on blocked/failed proxies)
-- [ ] 05-03-PLAN.md — Weekly karma report (summary of gains/losses by account)
+- [ ] 05-01-PLAN.md — Notification infrastructure (state tracking, macOS/Slack alerts)
+- [ ] 05-02-PLAN.md — Integrate alerts into tracker (detect and notify on problems)
+- [ ] 05-03-PLAN.md — Weekly karma report (velocity tracking, top/bottom performers)
 
 ## Progress
 
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Google Sheets Sync | 3/3 | Complete | 2026-01-18 |
 | 3. Enhanced Detection | 3/3 | Complete | 2026-01-18 |
 | 4. Automation | 1/1 | Complete | 2026-01-18 |
-| 5. Alerts & Reporting | 0/3 | Not started | - |
+| 5. Alerts & Reporting | 0/3 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-18*
@@ -115,3 +115,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 *Phase 2 planned: 2026-01-18*
 *Phase 3 planned: 2026-01-18*
 *Phase 4 planned: 2026-01-18*
+*Phase 5 planned: 2026-01-18*
