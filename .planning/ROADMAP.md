@@ -75,10 +75,10 @@ Plans:
   1. Script runs automatically on a schedule (cron or similar)
   2. Google Sheet updates daily without human action
   3. Failures are logged (not silent)
-**Plans**: TBD
+**Plans**: 1 plan in 1 wave
 
 Plans:
-- [ ] 04-01: Scheduled execution (cron setup, logging, error handling)
+- [ ] 04-01-PLAN.md — Scheduled execution (launchd setup, logging, error handling)
 
 ## Progress
 
@@ -97,3 +97,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 *Phase 1 planned: 2026-01-18*
 *Phase 2 planned: 2026-01-18*
 *Phase 3 planned: 2026-01-18*
+*Phase 4 planned: 2026-01-18*
