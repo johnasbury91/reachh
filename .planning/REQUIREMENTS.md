@@ -65,11 +65,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | Phase 1 | Pending |
-| CORE-02 | Phase 1 | Pending |
-| CORE-03 | Phase 1 | Pending |
+| CORE-01 | Phase 1 | Complete |
+| CORE-02 | Phase 1 | Complete |
+| CORE-03 | Phase 1 | Complete |
 | CORE-04 | Phase 2 | Pending |
-| CORE-05 | Phase 1 | Pending |
+| CORE-05 | Phase 1 | Complete |
 | STATUS-01 | Phase 3 | Pending |
 | STATUS-02 | Phase 2 | Pending |
 | STATUS-03 | Phase 2 | Pending |
@@ -77,9 +77,9 @@
 | PROXY-02 | Phase 3 | Pending |
 | PROXY-03 | Phase 3 | Pending |
 | PROXY-04 | Phase 2 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 2 | Pending |
 | INFRA-05 | Phase 4 | Pending |
 
