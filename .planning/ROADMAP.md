@@ -13,7 +13,7 @@ Dolphin v2 transforms the existing Reddit account tracker into an automated Goog
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Security** - Fix credential exposure, add anti-detection, build core tracking
-- [ ] **Phase 2: Google Sheets Sync** - Automatic sync with karma tracking and proxy columns
+- [x] **Phase 2: Google Sheets Sync** - Automatic sync with karma tracking and proxy columns
 - [ ] **Phase 3: Enhanced Detection** - Shadowban detection and proxy health monitoring
 - [ ] **Phase 4: Automation** - Scheduled jobs for hands-off operation
 
@@ -48,9 +48,9 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Google Sheets integration (gspread setup, authentication, batch upsert)
-- [ ] 02-02-PLAN.md — Proxy column (extract proxy from Dolphin API, display in sheet)
-- [ ] 02-03-PLAN.md — Account age and karma delta (calculate age, format delta with +/-)
+- [x] 02-01-PLAN.md — Google Sheets integration (gspread setup, authentication, batch upsert)
+- [x] 02-02-PLAN.md — Proxy column (extract proxy from Dolphin API, display in sheet)
+- [x] 02-03-PLAN.md — Account age and karma delta (calculate age, format delta with +/-)
 
 ### Phase 3: Enhanced Detection
 **Goal**: Detect shadowbans and verify proxy health across multiple providers
@@ -88,7 +88,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Security | 3/3 | Complete | 2026-01-18 |
-| 2. Google Sheets Sync | 0/3 | Planned | - |
+| 2. Google Sheets Sync | 3/3 | Complete | 2026-01-18 |
 | 3. Enhanced Detection | 0/3 | Not started | - |
 | 4. Automation | 0/1 | Not started | - |
 

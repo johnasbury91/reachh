@@ -68,19 +68,19 @@
 | CORE-01 | Phase 1 | Complete |
 | CORE-02 | Phase 1 | Complete |
 | CORE-03 | Phase 1 | Complete |
-| CORE-04 | Phase 2 | Pending |
+| CORE-04 | Phase 2 | Complete |
 | CORE-05 | Phase 1 | Complete |
 | STATUS-01 | Phase 3 | Pending |
-| STATUS-02 | Phase 2 | Pending |
-| STATUS-03 | Phase 2 | Pending |
-| PROXY-01 | Phase 2 | Pending |
+| STATUS-02 | Phase 2 | Complete |
+| STATUS-03 | Phase 2 | Complete |
+| PROXY-01 | Phase 2 | Complete |
 | PROXY-02 | Phase 3 | Pending |
 | PROXY-03 | Phase 3 | Pending |
-| PROXY-04 | Phase 2 | Pending |
+| PROXY-04 | Phase 2 | Complete |
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
-| INFRA-04 | Phase 2 | Pending |
+| INFRA-04 | Phase 2 | Complete |
 | INFRA-05 | Phase 4 | Pending |
 
 **Coverage:**
