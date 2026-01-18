@@ -15,9 +15,10 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-from models import DolphinProfile, RedditStatus, AccountResult
+from models import DolphinProfile, RedditStatus, AccountResult, ProxyHealth
 from sheets_sync import sync_to_sheet
 from sources import DolphinClient, RedditChecker
+from sources.proxy_health import ProxyHealthChecker
 
 
 def categorize_account(notes_content: str, reddit_status: str) -> str:
@@ -94,6 +95,7 @@ async def run_tracker(limit: int | None = None) -> list[AccountResult]:
 
     # Check Reddit status for each profile
     results: list[AccountResult] = []
+    proxy_checker = ProxyHealthChecker()
 
     async with RedditChecker() as reddit:
         for i, profile in enumerate(profiles):
@@ -126,6 +128,9 @@ async def run_tracker(limit: int | None = None) -> list[AccountResult]:
             # Categorize account
             category = categorize_account(profile.notes, status.status)
 
+            # Check proxy health
+            proxy_health = await proxy_checker.check(profile.proxy or "")
+
             # Create result
             result = AccountResult(
                 profile=profile,
@@ -133,6 +138,7 @@ async def run_tracker(limit: int | None = None) -> list[AccountResult]:
                 category=category,
                 karma_change=karma_change,
                 checked_at=datetime.now().isoformat(),
+                proxy_health=proxy_health,
             )
             results.append(result)
 
