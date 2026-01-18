@@ -3,6 +3,7 @@ Application settings loaded from environment variables and .env file.
 Uses pydantic-settings for type-safe configuration.
 """
 
+import json
 from pathlib import Path
 
 from pydantic import SecretStr, field_validator
@@ -33,6 +34,10 @@ class Settings(BaseSettings):
     reddit_max_retries: int = 5
     reddit_backoff_base: float = 2.0
 
+    # Google Sheets sync (optional - only required for sheets sync feature)
+    google_credentials_json: SecretStr | None = None
+    google_sheets_id: str | None = None
+
     @field_validator("dolphin_api_key", mode="before")
     @classmethod
     def validate_api_key(cls, v: str) -> str:
@@ -40,6 +45,20 @@ class Settings(BaseSettings):
         if not v or v.strip() == "":
             raise ValueError("DOLPHIN_API_KEY must be set")
         return v
+
+    @field_validator("google_credentials_json", mode="before")
+    @classmethod
+    def validate_google_credentials(cls, v: str | None) -> str | None:
+        """Validate that Google credentials JSON can be parsed."""
+        if v is None or v.strip() == "":
+            return None
+        try:
+            parsed = json.loads(v)
+            if not isinstance(parsed, dict) or "type" not in parsed:
+                raise ValueError("Invalid Google credentials: missing 'type' field")
+            return v
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid Google credentials JSON: {e}")
 
 
 # Create singleton instance
