@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Google Sheets Sync** - Automatic sync with karma tracking and proxy columns
 - [x] **Phase 3: Enhanced Detection** - Shadowban detection and proxy health monitoring
 - [x] **Phase 4: Automation** - Scheduled jobs for hands-off operation
+- [ ] **Phase 5: Alerts & Reporting** - Notifications on bans/issues, weekly karma summaries
 
 ## Phase Details
 
@@ -80,10 +81,25 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Scheduled execution (launchd setup, logging, error handling)
 
+### Phase 5: Alerts & Reporting
+**Goal**: Get notified when accounts have problems and track karma trends over time
+**Depends on**: Phase 4
+**Requirements**: ALERT-01, ALERT-02, ANALYTICS-01
+**Success Criteria** (what must be TRUE):
+  1. Receive notification when new bans/suspensions are detected
+  2. Receive notification when proxy health fails
+  3. Weekly karma summary shows top/bottom performers
+**Plans**: TBD
+
+Plans:
+- [ ] 05-01-PLAN.md — Ban/suspension alerts (detect new issues, send notification)
+- [ ] 05-02-PLAN.md — Proxy failure alerts (notify on blocked/failed proxies)
+- [ ] 05-03-PLAN.md — Weekly karma report (summary of gains/losses by account)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -91,6 +107,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 2. Google Sheets Sync | 3/3 | Complete | 2026-01-18 |
 | 3. Enhanced Detection | 3/3 | Complete | 2026-01-18 |
 | 4. Automation | 1/1 | Complete | 2026-01-18 |
+| 5. Alerts & Reporting | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-18*
