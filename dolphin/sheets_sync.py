@@ -12,7 +12,7 @@ from config import settings
 from models import AccountResult, calculate_account_age
 
 
-# Column headers for the Google Sheet (11 columns: A-K)
+# Column headers for the Google Sheet (12 columns: A-L)
 HEADERS = [
     "profile_id",
     "username",
@@ -23,6 +23,7 @@ HEADERS = [
     "account_age",
     "owner",
     "proxy",
+    "proxy_health",
     "karma_delta",
     "checked_at",
 ]
@@ -41,6 +42,11 @@ def _to_row(result: AccountResult) -> list:
     else:
         karma_delta = "0"
 
+    # Get proxy health status
+    proxy_health_status = "N/A"
+    if result.proxy_health:
+        proxy_health_status = result.proxy_health.status
+
     return [
         result.profile.id,
         result.profile.name,
@@ -51,6 +57,7 @@ def _to_row(result: AccountResult) -> list:
         account_age,
         result.profile.owner,
         result.profile.proxy or "None",
+        proxy_health_status,
         karma_delta,
         result.checked_at or datetime.now().isoformat(),
     ]
@@ -66,7 +73,7 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
 
     if not first_row or first_row != HEADERS:
         # Clear first row and write headers
-        worksheet.update("A1:K1", [HEADERS])
+        worksheet.update("A1:L1", [HEADERS])
 
 
 def sync_to_sheet(results: list[AccountResult]) -> dict:
@@ -123,7 +130,7 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
             # Update existing row
             row_num = existing_ids[profile_id]
             updates.append({
-                "range": f"A{row_num}:K{row_num}",
+                "range": f"A{row_num}:L{row_num}",
                 "values": [row_data],
             })
         else:
