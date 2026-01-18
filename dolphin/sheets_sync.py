@@ -9,10 +9,10 @@ from datetime import datetime
 import gspread
 
 from config import settings
-from models import AccountResult
+from models import AccountResult, calculate_account_age
 
 
-# Column headers for the Google Sheet
+# Column headers for the Google Sheet (11 columns: A-K)
 HEADERS = [
     "profile_id",
     "username",
@@ -20,6 +20,7 @@ HEADERS = [
     "total_karma",
     "comment_karma",
     "link_karma",
+    "account_age",
     "owner",
     "proxy",
     "karma_delta",
@@ -29,6 +30,9 @@ HEADERS = [
 
 def _to_row(result: AccountResult) -> list:
     """Convert AccountResult to a row list matching HEADERS order."""
+    # Calculate account age from Reddit created_utc
+    account_age = calculate_account_age(result.reddit.created_utc)
+
     # Format karma_delta as +N or -N for readability
     if result.karma_change > 0:
         karma_delta = f"+{result.karma_change}"
@@ -44,6 +48,7 @@ def _to_row(result: AccountResult) -> list:
         result.reddit.total_karma,
         result.reddit.comment_karma,
         result.reddit.link_karma,
+        account_age,
         result.profile.owner,
         result.profile.proxy or "None",
         karma_delta,
@@ -61,7 +66,7 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
 
     if not first_row or first_row != HEADERS:
         # Clear first row and write headers
-        worksheet.update("A1:J1", [HEADERS])
+        worksheet.update("A1:K1", [HEADERS])
 
 
 def sync_to_sheet(results: list[AccountResult]) -> dict:
@@ -118,7 +123,7 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
             # Update existing row
             row_num = existing_ids[profile_id]
             updates.append({
-                "range": f"A{row_num}:J{row_num}",
+                "range": f"A{row_num}:K{row_num}",
                 "values": [row_data],
             })
         else:
