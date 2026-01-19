@@ -19,10 +19,10 @@ from pathlib import Path
 from alerts import notify_bans, notify_proxy_failures
 from config import setup_logging
 from models import DolphinProfile, RedditStatus, AccountResult, ProxyHealth
-from sheets_sync import sync_to_sheet, archive_stale_profiles
+from sheets_sync import sync_to_sheet, archive_stale_profiles, archive_dead_accounts
 from sources import DolphinClient, RedditChecker
 from sources.proxy_health import ProxyHealthChecker
-from state import load_state, save_state, build_current_state, detect_changes
+from state import load_state, save_state, build_current_state, detect_changes, update_not_found_tracking
 
 # Module-level logger
 logger = logging.getLogger("tracker")
@@ -175,6 +175,22 @@ async def run_tracker(limit: int | None = None) -> int:
             if changes["new_proxy_failures"]:
                 logger.warning(f"New proxy failures detected: {changes['new_proxy_failures']}")
                 notify_proxy_failures(changes["new_proxy_failures"])
+
+            # Track not_found duration and archive dead accounts
+            account_history = previous_state.get("account_history", {})
+            updated_history, dead_accounts = update_not_found_tracking(
+                current_state["accounts"],
+                account_history,
+                threshold_days=7,
+            )
+            current_state["account_history"] = updated_history
+
+            if dead_accounts:
+                logger.info(f"Archiving {len(dead_accounts)} dead account(s): {dead_accounts}")
+                try:
+                    archive_dead_accounts(dead_accounts)
+                except Exception as e:
+                    logger.warning(f"Failed to archive dead accounts: {e}")
 
             # Save current state for next run
             save_state(current_state)
