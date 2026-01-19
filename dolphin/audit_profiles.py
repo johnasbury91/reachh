@@ -8,8 +8,13 @@ Identifies common misconfigurations that cause Reddit bans:
 2. Profiles using rotating IPs (port 823) instead of sticky
 3. Multiple profiles sharing the same proxy session
 4. Profiles with incomplete geo-targeting
+
+Usage:
+    python3 audit_profiles.py              # Console + JSON only
+    python3 audit_profiles.py --sync       # Also sync to Google Sheets "Audit" tab
 """
 
+import argparse
 import asyncio
 import json
 import re
@@ -19,8 +24,11 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
+import gspread
+
 from sources.dolphin import DolphinClient
 from models import DolphinProfile
+from config import settings
 
 
 @dataclass
@@ -365,8 +373,113 @@ def save_report_json(report: AuditReport, output_path: Path) -> None:
         json.dump(output, f, indent=2)
 
 
-async def main() -> None:
-    """Run profile audit."""
+# Audit sheet headers
+AUDIT_HEADERS = [
+    "username",        # A
+    "owner",           # B
+    "issues",          # C - comma-separated issue codes
+    "provider",        # D
+    "session_type",    # E
+    "session_id",      # F
+    "geo",             # G - country/state/city
+    "audited_at",      # H
+]
+
+
+def sync_to_sheets(report: AuditReport) -> dict:
+    """
+    Sync audit results to Google Sheets "Audit" tab.
+
+    Creates or updates an "Audit" tab with profiles that have issues.
+    Replaces all data on each run (full refresh).
+
+    Args:
+        report: AuditReport with results
+
+    Returns:
+        dict with "synced" count
+    """
+    # Check configuration
+    if not settings.google_credentials_json or not settings.google_sheets_id:
+        raise ValueError(
+            "Google Sheets not configured. Set GOOGLE_CREDENTIALS_JSON and GOOGLE_SHEETS_ID in .env"
+        )
+
+    # Load credentials from JSON string
+    credentials_json = settings.google_credentials_json.get_secret_value()
+    credentials = json.loads(credentials_json)
+
+    # Connect to Google Sheets
+    gc = gspread.service_account_from_dict(credentials)
+    spreadsheet = gc.open_by_key(settings.google_sheets_id)
+
+    # Get or create Audit tab
+    try:
+        audit_sheet = spreadsheet.worksheet("Audit")
+    except gspread.WorksheetNotFound:
+        audit_sheet = spreadsheet.add_worksheet(
+            title="Audit",
+            rows=500,
+            cols=len(AUDIT_HEADERS),
+        )
+
+    # Clear existing data and write headers
+    audit_sheet.clear()
+    audit_sheet.update(values=[AUDIT_HEADERS], range_name="A1:H1")
+
+    # Build summary row
+    summary_row = [
+        "SUMMARY",
+        f"{report.total_profiles} profiles",
+        f"{report.profiles_with_issues} with issues",
+        f"no_proxy: {report.no_proxy_count}",
+        f"rotating: {report.rotating_proxy_count}",
+        f"shared: {report.shared_proxy_count}",
+        f"no_geo: {report.no_geo_count}",
+        datetime.now().strftime("%Y-%m-%d %H:%M"),
+    ]
+    audit_sheet.update(values=[summary_row], range_name="A2:H2")
+
+    # Prepare data rows for profiles with issues
+    rows = []
+    for result in report.results:
+        if not result.issues:
+            continue
+
+        # Format geo info
+        geo_parts = []
+        if result.proxy_info.geo_country:
+            geo_parts.append(result.proxy_info.geo_country)
+        if result.proxy_info.geo_state:
+            geo_parts.append(result.proxy_info.geo_state)
+        if result.proxy_info.geo_city:
+            geo_parts.append(result.proxy_info.geo_city)
+        geo_str = "/".join(geo_parts) if geo_parts else "N/A"
+
+        rows.append([
+            result.username,
+            result.owner,
+            ", ".join(result.issues),
+            result.proxy_info.provider,
+            result.proxy_info.session_type,
+            result.proxy_info.session_id or "N/A",
+            geo_str,
+            datetime.now().isoformat(),
+        ])
+
+    # Batch write data rows starting at row 3
+    if rows:
+        audit_sheet.update(values=rows, range_name=f"A3:H{2 + len(rows)}")
+
+    return {"synced": len(rows)}
+
+
+async def main(sync_to_sheet: bool = False) -> None:
+    """Run profile audit.
+
+    Args:
+        sync_to_sheet: If True, also sync results to Google Sheets "Audit" tab
+    """
     print("Fetching profiles from Dolphin API...")
     profiles = await fetch_profiles()
     print(f"Found {len(profiles)} profiles")
@@ -396,6 +509,27 @@ async def main() -> None:
     save_report_json(report, output_path)
     print(f"Details saved to: {output_path}")
 
+    # Optionally sync to Google Sheets
+    if sync_to_sheet:
+        print("Syncing to Google Sheets 'Audit' tab...")
+        try:
+            result = sync_to_sheets(report)
+            print(f"Synced {result['synced']} profiles with issues to Audit tab")
+        except ValueError as e:
+            print(f"Warning: Could not sync to sheets - {e}")
+        except Exception as e:
+            print(f"Warning: Sheets sync failed - {e}")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(
+        description="Audit Dolphin profiles for proxy configuration issues"
+    )
+    parser.add_argument(
+        "--sync",
+        action="store_true",
+        help="Sync results to Google Sheets 'Audit' tab"
+    )
+    args = parser.parse_args()
+
+    asyncio.run(main(sync_to_sheet=args.sync))
