@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Enhanced Detection** - Shadowban detection and proxy health monitoring
 - [x] **Phase 4: Automation** - Scheduled jobs for hands-off operation
 - [x] **Phase 5: Alerts & Reporting** - Notifications on bans/issues, weekly karma summaries
+- [ ] **Phase 6: Data Hygiene & Reliability** - Archive stale accounts, cleanup sync, proxy/warmup reliability
 
 ## Phase Details
 
@@ -96,10 +97,27 @@ Plans:
 - [x] 05-02-PLAN.md — Integrate alerts into tracker (detect and notify on problems)
 - [x] 05-03-PLAN.md — Weekly karma report (velocity tracking, top/bottom performers)
 
+### Phase 6: Data Hygiene & Reliability
+**Goal**: Keep spreadsheet clean and improve proxy/warmup reliability for the account farm
+**Depends on**: Phase 5
+**Requirements**: HYGIENE-01, HYGIENE-02, RELIABILITY-01, RELIABILITY-02
+**Success Criteria** (what must be TRUE):
+  1. Profiles deleted from Dolphin are archived (not left as stale rows in sheet)
+  2. Dead Reddit accounts (not_found for 7+ days) are moved to Archive tab
+  3. Proxy failures are retried with backoff before marking as failed
+  4. Account warmup status is tracked (new accounts need gradual activity)
+**Plans**: 4 plans in 3 waves
+
+Plans:
+- [ ] 06-01-PLAN.md — Proxy retry with exponential backoff (tenacity integration)
+- [ ] 06-02-PLAN.md — Account warmup status tracking (age/karma thresholds)
+- [ ] 06-03-PLAN.md — Stale profile archival (detect and move deleted Dolphin profiles)
+- [ ] 06-04-PLAN.md — Dead account archival (not_found 7+ days tracking)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -108,6 +126,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. Enhanced Detection | 3/3 | Complete | 2026-01-18 |
 | 4. Automation | 1/1 | Complete | 2026-01-18 |
 | 5. Alerts & Reporting | 3/3 | Complete | 2026-01-18 |
+| 6. Data Hygiene & Reliability | 0/4 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-18*
@@ -116,3 +135,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 *Phase 3 planned: 2026-01-18*
 *Phase 4 planned: 2026-01-18*
 *Phase 5 planned: 2026-01-18*
+*Phase 6 planned: 2026-01-19*
