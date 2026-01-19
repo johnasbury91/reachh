@@ -76,13 +76,15 @@ def assign_state(profile_index: int) -> str:
 
 
 def generate_proxy_login(profile_name: str, state: str) -> str:
-    """Generate unique DataImpulse login with session ID and state.
+    """Generate unique DataImpulse login with session ID, state, and max sticky duration.
 
-    Format: baseuser__cr.us_st.STATE_s.sessionid
-    Example: 6bedabce678df1c53167__cr.us_st.california_s.bourdin_hady
+    Format: baseuser__cr.us_st.STATE_s.sessionid;sessttl.120
+    Example: 6bedabce678df1c53167__cr.us_st.california_s.bourdin_hady;sessttl.120
+
+    sessttl.120 = 120 minute (2 hour) sticky session (max allowed)
     """
     session_id = sanitize_session_id(profile_name)
-    return f"{DATAIMPULSE_USER}__cr.us_st.{state}_s.{session_id}"
+    return f"{DATAIMPULSE_USER}__cr.us_st.{state}_s.{session_id};sessttl.120"
 
 
 def generate_proxy_url(profile_name: str, state: str) -> str:
