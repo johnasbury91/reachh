@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Phase: 6 of 6 (Data Hygiene & Reliability)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 06-01-PLAN.md (Proxy Health Retry Logic)
+Last activity: 2026-01-19 - Completed 06-02-PLAN.md (Account Warmup Status)
 
-Progress: [██████████████░░░] 82% (14/17 plans)
+Progress: [███████████████░░] 88% (15/17 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 8.1 min
-- Total execution time: 1.89 hours
+- Total plans completed: 15
+- Average duration: 7.9 min
+- Total execution time: 1.96 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [██████████████░░░] 82% (14/17 plans
 | 3. Detection | 3/3 | 11 min | 3.7 min |
 | 4. Automation | 1/1 | 8 min | 8.0 min |
 | 5. Alerts & Reporting | 3/3 | 10 min | 3.3 min |
-| 6. Data Hygiene | 1/4 | 4 min | 4.0 min |
+| 6. Data Hygiene | 2/4 | 8 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 8 min, 2 min, 5 min, 3 min, 4 min
+- Last 5 plans: 2 min, 5 min, 3 min, 4 min, 4 min
 - Trend: Phase 6 continues fast execution
 
 *Updated after each plan completion*
@@ -90,10 +90,12 @@ Recent decisions affecting current work:
 - [05-03]: Weekday 0 in launchd = Sunday
 - [06-01]: Retry only transient failures (ConnectError, ConnectTimeout), not permanent (ProxyError, 403/429)
 - [06-01]: Exponential backoff with jitter: initial=1s, max=30s, jitter=5s
+- [06-02]: Warmup thresholds: established (90d+500k), ready (30d+100k), warming (7d OR 10k), new (otherwise)
+- [06-02]: warmup_status column position: after account_age (column H), 13 columns total
 
 ### Pending Todos
 
-None - 06-01 complete.
+None - 06-02 complete.
 
 ### Blockers/Concerns
 
@@ -137,7 +139,7 @@ All Phase 3 requirements verified:
 | Proxy health check | PASS |
 | Multi-provider support | PASS |
 
-Google Sheet now has 12 columns (A-L): profile_id, username, status, total_karma, comment_karma, link_karma, account_age, owner, proxy, proxy_health, karma_delta, checked_at
+Google Sheet now has 13 columns (A-M): profile_id, username, status, total_karma, comment_karma, link_karma, account_age, warmup_status, owner, proxy, proxy_health, karma_delta, checked_at
 
 Multi-provider proxy architecture:
 - ProxyProvider Protocol with name, matches(), normalize()
@@ -191,12 +193,12 @@ Alerting components:
 | 3. Detection | 3/3 | COMPLETE |
 | 4. Automation | 1/1 | COMPLETE |
 | 5. Alerts & Reporting | 3/3 | COMPLETE |
-| 6. Data Hygiene | 1/4 | IN PROGRESS |
+| 6. Data Hygiene | 2/4 | IN PROGRESS |
 
-**Total:** 14/17 plans complete, 1.89 hours execution time
+**Total:** 15/17 plans complete, 1.96 hours execution time
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 06-01-PLAN.md (Proxy Health Retry Logic)
+Stopped at: Completed 06-02-PLAN.md (Account Warmup Status)
 Resume file: None
