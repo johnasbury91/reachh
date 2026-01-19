@@ -8,17 +8,26 @@ A Python automation tool that tracks Reddit account farm operations and syncs to
 
 See the health of your entire Reddit account farm in one Google Sheet — accounts, karma, bans, proxies — updated automatically every day.
 
-## Current State
+## Current Milestone: v4 — Reliability & Insights
 
-**Milestone v3 Complete** (2026-01-19)
+**Goal:** Make the tracker self-maintaining and surface account health at a glance.
 
-The system now includes account survival features:
+**Target features:**
+- Fix Reddit checker rate limiting (prevent false positives that caused 21 deleted active profiles)
+- Scheduled weekly profile cleanup (automate dead account removal)
+- Scheduled weekly proxy audits (catch misconfigurations early)
+- Account health score column (composite indicator combining warmup, karma velocity, proxy health, age)
+- Sparkline trends in Google Sheets (7-day karma/activity visualization)
+
+## Previous State (v3 Complete)
+
+**Milestone v3** (2026-01-19) delivered account survival features:
 - Daily tracker runs at 9 AM via launchd
 - Weekly karma reports on Sundays at 10 AM
 - Notifications on bans, proxy failures, and warmup threshold violations
 - Archive tab for stale/dead accounts
-- **NEW:** Warmup tracking with activity limits by account age
-- **NEW:** Profile audit tool to detect proxy misconfigurations
+- Warmup tracking with activity limits by account age
+- Profile audit tool to detect proxy misconfigurations
 
 ### What's Running
 
@@ -64,9 +73,8 @@ Username, Status, Niche, Freelancer, Karma, Comment Karma, Link Karma, Warmup St
 ## Ideas for Future
 
 - Web dashboard (if Sheets becomes limiting)
-- Historical trend charts in Sheets (ANALYTICS-02)
 - Integration with task server
-- Account health scoring
+- Proxy failover (secondary provider if DataImpulse fails)
 
 ## Out of Scope
 
@@ -84,4 +92,4 @@ Username, Status, Niche, Freelancer, Karma, Comment Karma, Link Karma, Warmup St
 - **Automation**: macOS launchd
 
 ---
-*Last updated: 2026-01-19 after v3 milestone completion*
+*Last updated: 2026-01-20 — v4 milestone started*
