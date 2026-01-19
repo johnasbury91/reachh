@@ -9,23 +9,44 @@ from config import settings
 from models import DolphinProfile
 
 
-def format_proxy(proxy_data: dict | None) -> str:
-    """Format proxy for display. Returns 'None' if no proxy."""
+def format_proxy(proxy_data: dict | None) -> tuple[str, str]:
+    """Extract proxy info for display and health checking.
+
+    Returns:
+        Tuple of (display_proxy, full_proxy_url)
+        - display_proxy: Hostname only (safe for sheet display)
+        - full_proxy_url: Full URL with credentials (for health checking)
+    """
     if not proxy_data:
-        return "None"
+        return "None", ""
 
     host = proxy_data.get("host", "")
-    port = proxy_data.get("port", "")
+    if not host:
+        return "None", ""
+
     proxy_type = proxy_data.get("type", "http")
 
-    if not host:
-        return "None"
+    # Display version: just the hostname (safe for sheets)
+    display_proxy = f"{proxy_type}://{host}"
 
-    # Handle missing port gracefully
-    if port:
-        return f"{proxy_type}://{host}:{port}"
+    # Full URL: from 'name' field which contains credentials
+    # Format: http://username:password@host:port
+    name = proxy_data.get("name", "")
+    if name and ("@" in name or "://" in name):
+        # 'name' contains the full proxy URL
+        if not name.startswith(("http://", "https://", "socks")):
+            full_url = f"{proxy_type}://{name}"
+        else:
+            full_url = name
     else:
-        return f"{proxy_type}://{host}"
+        # No credentials available, use basic format
+        port = proxy_data.get("port", "")
+        if port:
+            full_url = f"{proxy_type}://{host}:{port}"
+        else:
+            full_url = display_proxy
+
+    return display_proxy, full_url
 
 
 class DolphinClient:
@@ -109,7 +130,7 @@ class DolphinClient:
 
                 # Extract proxy info from profile
                 proxy_data = p.get("proxy", {})
-                proxy_str = format_proxy(proxy_data) if proxy_data else "None"
+                display_proxy, full_proxy_url = format_proxy(proxy_data) if proxy_data else ("None", "")
 
                 profiles.append(
                     DolphinProfile(
@@ -119,7 +140,8 @@ class DolphinClient:
                         notes=notes_content,
                         created_at=p.get("created_at", ""),
                         updated_at=p.get("updated_at", ""),
-                        proxy=proxy_str,
+                        proxy=display_proxy,
+                        proxy_url=full_proxy_url,
                     )
                 )
 

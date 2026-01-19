@@ -85,7 +85,8 @@ class DolphinProfile:
     notes: str
     created_at: str
     updated_at: str
-    proxy: str = ""  # Proxy URL (e.g., "http://1.2.3.4:8080") or "None"
+    proxy: str = ""  # Display-safe proxy (hostname only, for sheet) or "None"
+    proxy_url: str = ""  # Full proxy URL with credentials (for health checking)
 
 
 @dataclass

@@ -144,8 +144,8 @@ async def run_tracker(limit: int | None = None) -> int:
                 # Categorize account
                 category = categorize_account(profile.notes, status.status)
 
-                # Check proxy health
-                proxy_health = await proxy_checker.check(profile.proxy or "")
+                # Check proxy health (use full URL with credentials)
+                proxy_health = await proxy_checker.check(profile.proxy_url or "")
 
                 # Create result
                 result = AccountResult(
