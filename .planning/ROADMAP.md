@@ -21,7 +21,12 @@ Dolphin v3 focuses on account survival — stopping the loss of new accounts in 
   3. Proxy health checks pass (not timing out)
   4. Dolphin profiles configured with correct cookie/session persistence
   5. Proxy setup guide documented with step-by-step instructions
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
+
+Plans:
+- [ ] 01-01-PLAN.md — Add DataImpulse provider & fix health checks (wave 1)
+- [ ] 01-02-PLAN.md — Audit Dolphin profile configuration (wave 1)
+- [ ] 01-03-PLAN.md — Create proxy setup documentation (wave 2)
 
 ### Phase 2: Warmup Management
 **Goal**: New accounts follow safe activity patterns and get flagged if they exceed limits
