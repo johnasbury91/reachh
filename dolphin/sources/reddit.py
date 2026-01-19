@@ -5,12 +5,13 @@ Uses randomized delays and exponential backoff for rate limit handling.
 
 import asyncio
 import random
+from datetime import datetime, timezone
 from typing import Literal
 
 import httpx
 
 from config import settings
-from models import RedditStatus
+from models import RedditStatus, ActivityCounts
 
 
 class RedditChecker:
@@ -188,3 +189,76 @@ class RedditChecker:
             result = await self.check_account(username)
             results.append(result)
         return results
+
+    async def get_activity_counts(self, username: str) -> ActivityCounts:
+        """Get today's activity counts for a Reddit account.
+
+        Fetches recent comments and posts, counts those from today (UTC).
+        Designed to be called AFTER check_account() confirms the account is active.
+
+        Args:
+            username: Reddit username to check
+
+        Returns:
+            ActivityCounts with today's comment and post counts.
+            Returns 0 counts on errors (account may be suspended/rate limited).
+        """
+        if not self.client:
+            raise RuntimeError("Use async context manager")
+
+        today = datetime.now(tz=timezone.utc).date()
+        fetched_at = datetime.now(tz=timezone.utc).isoformat()
+
+        comments_today = 0
+        posts_today = 0
+
+        # Fetch recent comments
+        try:
+            await self._random_delay()
+            comments_url = f"https://www.reddit.com/user/{username}/comments.json?limit=25"
+            comments_resp = await self.client.get(comments_url)
+
+            if comments_resp.status_code == 200:
+                comments = comments_resp.json().get("data", {}).get("children", [])
+                for c in comments:
+                    created_utc = c.get("data", {}).get("created_utc", 0)
+                    if created_utc > 0:
+                        comment_date = datetime.fromtimestamp(
+                            created_utc, tz=timezone.utc
+                        ).date()
+                        if comment_date == today:
+                            comments_today += 1
+            # On 404/403/429 - return 0 counts (don't block)
+
+        except httpx.RequestError:
+            # Network error - return 0 counts
+            pass
+
+        # Fetch recent submissions
+        try:
+            await self._random_delay()
+            posts_url = f"https://www.reddit.com/user/{username}/submitted.json?limit=10"
+            posts_resp = await self.client.get(posts_url)
+
+            if posts_resp.status_code == 200:
+                posts = posts_resp.json().get("data", {}).get("children", [])
+                for p in posts:
+                    created_utc = p.get("data", {}).get("created_utc", 0)
+                    if created_utc > 0:
+                        post_date = datetime.fromtimestamp(
+                            created_utc, tz=timezone.utc
+                        ).date()
+                        if post_date == today:
+                            posts_today += 1
+            # On 404/403/429 - return 0 counts (don't block)
+
+        except httpx.RequestError:
+            # Network error - return 0 counts
+            pass
+
+        return ActivityCounts(
+            username=username,
+            comments_today=comments_today,
+            posts_today=posts_today,
+            fetched_at=fetched_at,
+        )
