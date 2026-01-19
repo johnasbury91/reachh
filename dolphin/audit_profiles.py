@@ -104,10 +104,18 @@ def parse_dataimpulse_proxy(proxy_url: str) -> ProxyAuditInfo:
         else:
             info.session_type = "unknown"
 
-        # Parse geo from username (format: user__cr.us;state.illinois;city.chicago)
+        # Parse geo and session ID from username
+        # Format: user__cr.us;state.illinois;city.chicago
+        # Or with session: user__cr.us;state.california-sess_profilename
         username = parsed.username or ""
         if "__" in username:
             params_part = username.split("__", 1)[1]
+
+            # Check for session ID suffix (e.g., -sess_profilename)
+            if "-sess_" in params_part:
+                params_part, session_suffix = params_part.rsplit("-sess_", 1)
+                info.session_id = f"sess_{session_suffix}"  # Use session ID from username
+
             params = params_part.split(";")
             for param in params:
                 if param.startswith("cr."):
