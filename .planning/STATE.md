@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Phase: 6 of 6 (Data Hygiene & Reliability)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 06-02-PLAN.md (Account Warmup Status)
+Last activity: 2026-01-19 - Completed 06-03-PLAN.md (Stale Profile Archival)
 
-Progress: [███████████████░░] 88% (15/17 plans)
+Progress: [████████████████░] 94% (16/17 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 7.9 min
-- Total execution time: 1.96 hours
+- Total plans completed: 16
+- Average duration: 7.5 min
+- Total execution time: 2.0 hours
 
 **By Phase:**
 
@@ -32,10 +32,10 @@ Progress: [███████████████░░] 88% (15/17 plans
 | 3. Detection | 3/3 | 11 min | 3.7 min |
 | 4. Automation | 1/1 | 8 min | 8.0 min |
 | 5. Alerts & Reporting | 3/3 | 10 min | 3.3 min |
-| 6. Data Hygiene | 2/4 | 8 min | 4.0 min |
+| 6. Data Hygiene | 3/4 | 10 min | 3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 2 min, 5 min, 3 min, 4 min, 4 min
+- Last 5 plans: 5 min, 3 min, 4 min, 4 min, 2 min
 - Trend: Phase 6 continues fast execution
 
 *Updated after each plan completion*
@@ -92,10 +92,14 @@ Recent decisions affecting current work:
 - [06-01]: Exponential backoff with jitter: initial=1s, max=30s, jitter=5s
 - [06-02]: Warmup thresholds: established (90d+500k), ready (30d+100k), warming (7d OR 10k), new (otherwise)
 - [06-02]: warmup_status column position: after account_age (column H), 13 columns total
+- [06-03]: Archive tab has 15 columns (13 main + archive_reason + archived_at)
+- [06-03]: Stale detection compares sheet IDs vs Dolphin IDs each run
+- [06-03]: Delete rows in reverse order to preserve indices
+- [06-03]: Archive reason is "deleted_from_dolphin"
 
 ### Pending Todos
 
-None - 06-02 complete.
+None - 06-03 complete.
 
 ### Blockers/Concerns
 
@@ -193,12 +197,12 @@ Alerting components:
 | 3. Detection | 3/3 | COMPLETE |
 | 4. Automation | 1/1 | COMPLETE |
 | 5. Alerts & Reporting | 3/3 | COMPLETE |
-| 6. Data Hygiene | 2/4 | IN PROGRESS |
+| 6. Data Hygiene | 3/4 | IN PROGRESS |
 
-**Total:** 15/17 plans complete, 1.96 hours execution time
+**Total:** 16/17 plans complete, 2.0 hours execution time
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 06-02-PLAN.md (Account Warmup Status)
+Stopped at: Completed 06-03-PLAN.md (Stale Profile Archival)
 Resume file: None
