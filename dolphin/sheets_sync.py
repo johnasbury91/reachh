@@ -299,3 +299,74 @@ def archive_stale_profiles(dolphin_profile_ids: set[str]) -> dict:
         worksheet.delete_rows(row_idx)
 
     return {"archived": len(stale_rows)}
+
+
+def archive_dead_accounts(usernames_to_archive: list[str]) -> dict:
+    """
+    Archive accounts that have been not_found for threshold days.
+
+    Moves accounts from main sheet to Archive tab with archive_reason
+    "dead_account_7d" and archived_at timestamp.
+
+    Args:
+        usernames_to_archive: List of Reddit usernames to archive
+
+    Returns:
+        dict with "archived" count
+    """
+    if not usernames_to_archive:
+        return {"archived": 0}
+
+    # Check configuration
+    if not settings.google_credentials_json or not settings.google_sheets_id:
+        raise ValueError(
+            "Google Sheets not configured. Set GOOGLE_CREDENTIALS_JSON and GOOGLE_SHEETS_ID in .env"
+        )
+
+    # Load credentials from JSON string
+    credentials_json = settings.google_credentials_json.get_secret_value()
+    credentials = json.loads(credentials_json)
+
+    # Connect to Google Sheets
+    gc = gspread.service_account_from_dict(credentials)
+    spreadsheet = gc.open_by_key(settings.google_sheets_id)
+    worksheet = spreadsheet.sheet1
+
+    # Read all values from main sheet (row 3 onwards = data, skip header and summary)
+    all_values = worksheet.get_all_values()
+
+    # Find rows where username (column B) is in usernames_to_archive
+    usernames_set = set(usernames_to_archive)
+    dead_rows = []
+    dead_row_indices = []
+
+    for idx, row in enumerate(all_values[2:], start=3):  # Start at row 3 (index 2)
+        if not row or len(row) < 2:
+            continue
+        username = row[1]  # Column B = username
+        if username in usernames_set:
+            dead_rows.append(row)
+            dead_row_indices.append(idx)
+
+    if not dead_rows:
+        return {"archived": 0}
+
+    # Get or create Archive sheet
+    archive_sheet = _get_or_create_archive_sheet(spreadsheet)
+
+    # Prepare archive rows with metadata
+    archived_at = datetime.now().isoformat()
+    archive_rows = []
+    for row in dead_rows:
+        # Extend row with archive metadata
+        archive_row = row + ["dead_account_7d", archived_at]
+        archive_rows.append(archive_row)
+
+    # Batch append to Archive sheet (single API call)
+    archive_sheet.append_rows(archive_rows)
+
+    # Delete dead rows from main sheet (work backwards to preserve indices)
+    for row_idx in sorted(dead_row_indices, reverse=True):
+        worksheet.delete_rows(row_idx)
+
+    return {"archived": len(dead_rows)}
