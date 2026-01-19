@@ -37,14 +37,19 @@ Plans:
   2. Tracker shows activity counts in Google Sheet
   3. Alerts fire when accounts exceed safe thresholds
   4. Warmup playbook documented with daily/weekly schedule
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
+
+Plans:
+- [ ] 02-01-PLAN.md — Warmup limits module & activity counting (wave 1)
+- [ ] 02-02-PLAN.md — Tracker integration, sheets columns, alerts (wave 2)
+- [ ] 02-03-PLAN.md — Warmup playbook & troubleshooting docs (wave 3)
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Proxy & Session Audit | 3/3 | Complete | 2026-01-19 |
-| 2. Warmup Management | 0/? | Not Started | — |
+| 2. Warmup Management | 0/3 | Not Started | — |
 
 ---
 *Roadmap created: 2026-01-19*
