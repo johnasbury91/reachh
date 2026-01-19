@@ -6,11 +6,13 @@ Auto-detects provider from URL and provides normalization.
 from sources.proxies.base import ProxyConfig, ProxyProvider
 from sources.proxies.decodo import DecodoProvider
 from sources.proxies.brightdata import BrightDataProvider
+from sources.proxies.dataimpulse import DataImpulseProvider
 
 # Registry of all providers
 PROVIDERS: list[ProxyProvider] = [
     DecodoProvider(),
     BrightDataProvider(),
+    DataImpulseProvider(),
 ]
 
 
