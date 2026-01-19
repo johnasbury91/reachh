@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Enhanced Detection** - Shadowban detection and proxy health monitoring
 - [x] **Phase 4: Automation** - Scheduled jobs for hands-off operation
 - [x] **Phase 5: Alerts & Reporting** - Notifications on bans/issues, weekly karma summaries
-- [ ] **Phase 6: Data Hygiene & Reliability** - Archive stale accounts, cleanup sync, proxy/warmup reliability
+- [x] **Phase 6: Data Hygiene & Reliability** - Archive stale accounts, cleanup sync, proxy/warmup reliability
 
 ## Phase Details
 
@@ -109,10 +109,10 @@ Plans:
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 06-01-PLAN.md — Proxy retry with exponential backoff (tenacity integration)
-- [ ] 06-02-PLAN.md — Account warmup status tracking (age/karma thresholds)
-- [ ] 06-03-PLAN.md — Stale profile archival (detect and move deleted Dolphin profiles)
-- [ ] 06-04-PLAN.md — Dead account archival (not_found 7+ days tracking)
+- [x] 06-01-PLAN.md — Proxy retry with exponential backoff (tenacity integration)
+- [x] 06-02-PLAN.md — Account warmup status tracking (age/karma thresholds)
+- [x] 06-03-PLAN.md — Stale profile archival (detect and move deleted Dolphin profiles)
+- [x] 06-04-PLAN.md — Dead account archival (not_found 7+ days tracking)
 
 ## Progress
 
@@ -126,7 +126,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Enhanced Detection | 3/3 | Complete | 2026-01-18 |
 | 4. Automation | 1/1 | Complete | 2026-01-18 |
 | 5. Alerts & Reporting | 3/3 | Complete | 2026-01-18 |
-| 6. Data Hygiene & Reliability | 0/4 | Planned | - |
+| 6. Data Hygiene & Reliability | 4/4 | Complete | 2026-01-19 |
 
 ---
 *Roadmap created: 2026-01-18*

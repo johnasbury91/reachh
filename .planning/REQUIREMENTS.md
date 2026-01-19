@@ -51,6 +51,16 @@
 - **ANALYTICS-01**: Karma velocity tracking (karma/day rate)
 - **ANALYTICS-02**: Historical trend charts in Sheets
 
+### Data Hygiene
+
+- **HYGIENE-01**: Archive profiles deleted from Dolphin (move to Archive tab, not stale in main sheet)
+- **HYGIENE-02**: Archive dead Reddit accounts (not_found for 7+ days)
+
+### Reliability
+
+- **RELIABILITY-01**: Retry proxy failures with exponential backoff before marking failed
+- **RELIABILITY-02**: Track account warmup status (new accounts flagged for gradual activity)
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -85,10 +95,14 @@
 | ALERT-01 | Phase 5 | Complete |
 | ALERT-02 | Phase 5 | Complete |
 | ANALYTICS-01 | Phase 5 | Complete |
+| HYGIENE-01 | Phase 6 | Complete |
+| HYGIENE-02 | Phase 6 | Complete |
+| RELIABILITY-01 | Phase 6 | Complete |
+| RELIABILITY-02 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total (all complete)
-- v2 requirements: 3 total (all complete)
+- v2 requirements: 7 total (all complete)
 - Unmapped: 0 ✓
 
 ---
