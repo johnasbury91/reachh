@@ -41,7 +41,17 @@ STATE_TIMEZONES = {
 
 
 def extract_state_from_proxy(proxy_url: str) -> str | None:
-    """Extract state from proxy URL."""
+    """Extract state from proxy URL.
+
+    Handles both formats:
+    - Old: state.california-sess_xxx
+    - New: _st.california_s.xxx
+    """
+    # New format: _st.STATE_s.
+    match = re.search(r"_st\.([a-z_]+)_s\.", proxy_url)
+    if match:
+        return match.group(1)
+    # Old format: state.STATE
     match = re.search(r"state\.([a-z_]+)", proxy_url)
     if match:
         return match.group(1)
