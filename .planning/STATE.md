@@ -11,28 +11,28 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 
 Milestone: v3 (Proxy & Session Audit + Warmup Management)
 Phase: 02-warmup-management (2 of 2)
-Plan: 01 of 3 complete
+Plan: 02 of 3 complete
 Status: In progress
-Last activity: 2026-01-19 - Completed 02-01-PLAN.md (Warmup Limits and Activity Counting)
+Last activity: 2026-01-19 - Completed 02-02-PLAN.md (Tracker Integration)
 
-Progress: [████░░░░░░] 40% (4/10 plans in milestone)
+Progress: [█████░░░░░] 50% (5/10 plans in milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21 (17 from v2 + 4 from v3)
-- Average duration: 6.2 min
-- Total execution time: 2.0 hours + 10 min
+- Total plans completed: 22 (17 from v2 + 5 from v3)
+- Average duration: 6.1 min
+- Total execution time: 2.0 hours + 15 min
 
 **By Phase (v3):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01. Proxy & Session Audit | 3/3 | 8 min | 2.7 min |
-| 02. Warmup Management | 1/3 | 2 min | 2.0 min |
+| 02. Warmup Management | 2/3 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 2 min (01-01), 4 min (01-02), 2 min (01-03), 2 min (02-01)
+- Last 5 plans: 4 min (01-02), 2 min (01-03), 2 min (02-01), 5 min (02-02)
 - Trend: Fast execution maintained
 
 *Updated after each plan completion*
@@ -65,10 +65,13 @@ Recent decisions affecting current work:
 - [v3 02-01]: Alert threshold: 80% of limit triggers WARNING, 100% triggers EXCEEDED
 - [v3 02-01]: Activity counts return 0 on errors (graceful degradation)
 - [v3 02-01]: Votes not tracked (Reddit API keeps votes private)
+- [v3 02-02]: Activity field on AccountResult optional (None for non-active)
+- [v3 02-02]: Limit status shows N/A for non-active, OK for active without data
+- [v3 02-02]: Summary row includes aggregate warmup limit counts
 
 ### Pending Todos
 
-None - continue with 02-02.
+None - continue with 02-03.
 
 ### Blockers/Concerns
 
@@ -104,7 +107,7 @@ None currently.
 | Plan | Name | Status |
 |------|------|--------|
 | 02-01 | Warmup Limits and Activity Counting | COMPLETE |
-| 02-02 | Tracker Integration | PENDING |
+| 02-02 | Tracker Integration | COMPLETE |
 | 02-03 | Warmup Alerting | PENDING |
 
 **Completed in 02-01:**
@@ -113,6 +116,12 @@ None currently.
 - check_warmup_thresholds() for 80%/100% limit enforcement
 - ActivityCounts dataclass for daily comment/post tracking
 - get_activity_counts() method on RedditChecker
+
+**Completed in 02-02:**
+- Extended HEADERS to 17 columns (A-Q) with warmup columns
+- notify_warmup_warnings() function for threshold alerts
+- Tracker fetches activity counts for active accounts
+- WARMUP STATUS section in tracker summary logging
 
 ## Phase 01 Deliverables Summary
 
@@ -147,6 +156,6 @@ Key deliverables:
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:43 UTC
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-01-19 08:49 UTC
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
