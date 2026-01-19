@@ -19,7 +19,7 @@ from pathlib import Path
 from alerts import notify_bans, notify_proxy_failures
 from config import setup_logging
 from models import DolphinProfile, RedditStatus, AccountResult, ProxyHealth
-from sheets_sync import sync_to_sheet
+from sheets_sync import sync_to_sheet, archive_stale_profiles
 from sources import DolphinClient, RedditChecker
 from sources.proxy_health import ProxyHealthChecker
 from state import load_state, save_state, build_current_state, detect_changes
@@ -97,6 +97,9 @@ async def run_tracker(limit: int | None = None) -> int:
         async with DolphinClient() as dolphin:
             profiles = await dolphin.get_profiles()
         logger.info(f"Found {len(profiles)} profiles")
+
+        # Extract profile IDs for stale detection
+        dolphin_profile_ids = {str(p.id) for p in profiles}
 
         if limit:
             profiles = profiles[:limit]
@@ -214,6 +217,11 @@ async def run_tracker(limit: int | None = None) -> int:
             logger.info("Syncing to Google Sheets...")
             stats = sync_to_sheet(results)
             logger.info(f"Sheets sync complete: {stats['updated']} updated, {stats['inserted']} inserted")
+
+            # Archive profiles deleted from Dolphin
+            archive_stats = archive_stale_profiles(dolphin_profile_ids)
+            if archive_stats["archived"] > 0:
+                logger.info(f"Archived {archive_stats['archived']} stale profile(s)")
         except Exception as e:
             logger.warning(f"Sheets sync failed: {e}")
             # Don't fail the whole run - CSV export already succeeded
