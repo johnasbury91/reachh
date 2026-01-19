@@ -29,6 +29,9 @@ HEADERS = [
     "checked_at",      # M
 ]
 
+# Archive tab has main headers + archive metadata (15 columns: A-O)
+ARCHIVE_HEADERS = HEADERS + ["archive_reason", "archived_at"]
+
 
 def _to_row(result: AccountResult) -> list:
     """Convert AccountResult to a row list matching HEADERS order."""
@@ -210,3 +213,89 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
         "updated": len(updates),
         "inserted": len(inserts),
     }
+
+
+def _get_or_create_archive_sheet(spreadsheet: gspread.Spreadsheet) -> gspread.Worksheet:
+    """Get or create the Archive worksheet."""
+    try:
+        archive_sheet = spreadsheet.worksheet("Archive")
+    except gspread.WorksheetNotFound:
+        # Create with enough rows/cols for archived data
+        archive_sheet = spreadsheet.add_worksheet(
+            title="Archive",
+            rows=1000,
+            cols=len(ARCHIVE_HEADERS),
+        )
+        # Write headers (A1 to O1 for 15 columns)
+        archive_sheet.update(f"A1:{chr(64 + len(ARCHIVE_HEADERS))}1", [ARCHIVE_HEADERS])
+    return archive_sheet
+
+
+def archive_stale_profiles(dolphin_profile_ids: set[str]) -> dict:
+    """
+    Archive profiles that exist in sheet but not in Dolphin.
+
+    Profiles deleted from Dolphin are moved to the Archive tab with
+    archive_reason and archived_at metadata.
+
+    Args:
+        dolphin_profile_ids: Set of profile IDs currently in Dolphin
+
+    Returns:
+        dict with "archived" count
+    """
+    # Check configuration
+    if not settings.google_credentials_json or not settings.google_sheets_id:
+        raise ValueError(
+            "Google Sheets not configured. Set GOOGLE_CREDENTIALS_JSON and GOOGLE_SHEETS_ID in .env"
+        )
+
+    # Load credentials from JSON string
+    credentials_json = settings.google_credentials_json.get_secret_value()
+    credentials = json.loads(credentials_json)
+
+    # Connect to Google Sheets
+    gc = gspread.service_account_from_dict(credentials)
+    spreadsheet = gc.open_by_key(settings.google_sheets_id)
+    worksheet = spreadsheet.sheet1
+
+    # Read all values from main sheet (row 3 onwards = data, skip header and summary)
+    all_values = worksheet.get_all_values()
+
+    # Find stale rows (in sheet but not in Dolphin)
+    stale_rows = []
+    stale_row_indices = []
+
+    for idx, row in enumerate(all_values[2:], start=3):  # Start at row 3 (index 2)
+        if not row or not row[0]:
+            continue
+        profile_id = str(row[0])
+        if profile_id == "SUMMARY":
+            continue
+        if profile_id not in dolphin_profile_ids:
+            # This profile was deleted from Dolphin
+            stale_rows.append(row)
+            stale_row_indices.append(idx)
+
+    if not stale_rows:
+        return {"archived": 0}
+
+    # Get or create Archive sheet
+    archive_sheet = _get_or_create_archive_sheet(spreadsheet)
+
+    # Prepare archive rows with metadata
+    archived_at = datetime.now().isoformat()
+    archive_rows = []
+    for row in stale_rows:
+        # Extend row with archive metadata
+        archive_row = row + ["deleted_from_dolphin", archived_at]
+        archive_rows.append(archive_row)
+
+    # Batch append to Archive sheet (single API call)
+    archive_sheet.append_rows(archive_rows)
+
+    # Delete stale rows from main sheet (work backwards to preserve indices)
+    for row_idx in sorted(stale_row_indices, reverse=True):
+        worksheet.delete_rows(row_idx)
+
+    return {"archived": len(stale_rows)}
