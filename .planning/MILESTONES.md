@@ -1,5 +1,59 @@
 # Milestone History
 
+## v3 — Account Survival
+
+**Completed:** 2026-01-19
+**Duration:** 1 day (2026-01-19)
+**Core Value:** Stop losing new accounts in the first 2 weeks through proper proxy setup and warmup management
+
+### Summary
+
+Audited proxy configuration, implemented warmup management, and documented best practices to improve account survival rates during the critical first 2 weeks.
+
+### Accomplishments
+
+**Phase 1: Proxy & Session Audit**
+- Created DataImpulse proxy provider with session type detection (sticky vs rotating)
+- Built profile audit script that discovered 102 profiles sharing 32 proxy sessions
+- Increased proxy health check timeout to 30s for residential proxies
+- Created PROXY_SETUP.md and DOLPHIN_CONFIG.md documentation
+
+**Phase 2: Warmup Management**
+- Implemented 4-tier warmup system (new/warming/ready/established)
+- Extended Google Sheets to 17 columns with activity tracking
+- Added warmup threshold alerts at 80% and 100% limits
+- Created WARMUP_PLAYBOOK.md (370 lines) and TROUBLESHOOTING.md (292 lines)
+
+### Metrics
+
+| Metric | Value |
+|--------|-------|
+| Phases | 2 |
+| Plans | 6 |
+| Requirements | 15 |
+| Files Changed | 27 |
+| Insertions | 4,438 |
+
+### Files Delivered
+
+**New Modules:**
+- `dolphin/warmup.py` — Warmup tier definitions and threshold checking
+- `dolphin/audit_profiles.py` — Profile audit with issue detection
+- `dolphin/sources/proxies/dataimpulse.py` — DataImpulse provider
+
+**Documentation:**
+- `dolphin/docs/PROXY_SETUP.md` — DataImpulse/Decodo configuration
+- `dolphin/docs/DOLPHIN_CONFIG.md` — Profile setup guide
+- `dolphin/docs/WARMUP_PLAYBOOK.md` — Day-by-day warmup schedule
+- `dolphin/docs/TROUBLESHOOTING.md` — Ban diagnosis guide
+
+### Archive
+
+- [v3-ROADMAP.md](milestones/v3-ROADMAP.md)
+- [v3-REQUIREMENTS.md](milestones/v3-REQUIREMENTS.md)
+
+---
+
 ## v2 — Dolphin Reddit Account Tracker
 
 **Completed:** 2026-01-19
