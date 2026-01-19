@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 5 - Alerts & Reporting - COMPLETE
+**Current focus:** Phase 6 - Data Hygiene & Reliability - IN PROGRESS
 
 ## Current Position
 
-Phase: 5 of 5 (Alerts & Reporting)
-Plan: 3 of 3 in current phase - ALL COMPLETE
-Status: PROJECT COMPLETE
-Last activity: 2026-01-18 - Completed 05-02-PLAN.md (Tracker Integration)
+Phase: 6 of 6 (Data Hygiene & Reliability)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 06-01-PLAN.md (Proxy Health Retry Logic)
 
-Progress: [█████████████] 100% (13/13 plans)
+Progress: [██████████████░░░] 82% (14/17 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 8.5 min
-- Total execution time: 1.82 hours
+- Total plans completed: 14
+- Average duration: 8.1 min
+- Total execution time: 1.89 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [█████████████] 100% (13/13 plans)
 | 3. Detection | 3/3 | 11 min | 3.7 min |
 | 4. Automation | 1/1 | 8 min | 8.0 min |
 | 5. Alerts & Reporting | 3/3 | 10 min | 3.3 min |
+| 6. Data Hygiene | 1/4 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 8 min, 2 min, 5 min, 3 min
-- Trend: Phase 5 execution fast due to existing infrastructure
+- Last 5 plans: 8 min, 2 min, 5 min, 3 min, 4 min
+- Trend: Phase 6 continues fast execution
 
 *Updated after each plan completion*
 
@@ -87,10 +88,12 @@ Recent decisions affecting current work:
 - [05-03]: Created alerts.py as dependency (was planned for 05-01)
 - [05-03]: Velocity = 0 when < 2 data points (correct edge case handling)
 - [05-03]: Weekday 0 in launchd = Sunday
+- [06-01]: Retry only transient failures (ConnectError, ConnectTimeout), not permanent (ProxyError, 403/429)
+- [06-01]: Exponential backoff with jitter: initial=1s, max=30s, jitter=5s
 
 ### Pending Todos
 
-None - all plans complete.
+None - 06-01 complete.
 
 ### Blockers/Concerns
 
@@ -179,7 +182,7 @@ Alerting components:
 - weekly_karma_report.py: weekly summary with karma velocity
 - launchd plist for Sunday 10 AM weekly report
 
-## PROJECT COMPLETE
+## Phase Progress
 
 | Phase | Plans | Status |
 |-------|-------|--------|
@@ -188,11 +191,12 @@ Alerting components:
 | 3. Detection | 3/3 | COMPLETE |
 | 4. Automation | 1/1 | COMPLETE |
 | 5. Alerts & Reporting | 3/3 | COMPLETE |
+| 6. Data Hygiene | 1/4 | IN PROGRESS |
 
-**Total:** 13 plans, 1.82 hours execution time
+**Total:** 14/17 plans complete, 1.89 hours execution time
 
 ## Session Continuity
 
-Last session: 2026-01-18 14:13 UTC
-Stopped at: Completed 05-02-PLAN.md (Tracker Integration) - PROJECT COMPLETE
+Last session: 2026-01-19
+Stopped at: Completed 06-01-PLAN.md (Proxy Health Retry Logic)
 Resume file: None
