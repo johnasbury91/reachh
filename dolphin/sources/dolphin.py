@@ -197,3 +197,49 @@ class DolphinClient:
         )
 
         return response.status_code == 200
+
+    async def update_profile_timezone(
+        self,
+        profile_id: str,
+        timezone: str,
+    ) -> bool:
+        """Update a profile's timezone.
+
+        Args:
+            profile_id: Dolphin profile ID
+            timezone: IANA timezone (e.g., "America/Los_Angeles")
+
+        Returns:
+            True if update successful, False otherwise
+        """
+        if not self.client:
+            raise RuntimeError("Use async context manager")
+
+        data = {
+            "timezone": {
+                "mode": "manual",
+                "value": timezone,
+            }
+        }
+
+        response = await self.client.patch(
+            f"/browser_profiles/{profile_id}",
+            json=data,
+        )
+
+        return response.status_code == 200
+
+    async def delete_profile(self, profile_id: str) -> bool:
+        """Delete a profile.
+
+        Args:
+            profile_id: Dolphin profile ID
+
+        Returns:
+            True if delete successful, False otherwise
+        """
+        if not self.client:
+            raise RuntimeError("Use async context manager")
+
+        response = await self.client.delete(f"/browser_profiles/{profile_id}")
+        return response.status_code == 200

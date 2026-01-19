@@ -78,11 +78,11 @@ def assign_state(profile_index: int) -> str:
 def generate_proxy_login(profile_name: str, state: str) -> str:
     """Generate unique DataImpulse login with session ID and state.
 
-    Format: baseuser__cr.us;state.STATE-sess_sessionid
-    Example: 6bedabce678df1c53167__cr.us;state.california-sess_bourdin_hady
+    Format: baseuser__cr.us_st.STATE_s.sessionid
+    Example: 6bedabce678df1c53167__cr.us_st.california_s.bourdin_hady
     """
     session_id = sanitize_session_id(profile_name)
-    return f"{DATAIMPULSE_USER}__cr.us;state.{state}-sess_{session_id}"
+    return f"{DATAIMPULSE_USER}__cr.us_st.{state}_s.{session_id}"
 
 
 def generate_proxy_url(profile_name: str, state: str) -> str:
