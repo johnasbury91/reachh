@@ -40,6 +40,41 @@ def calculate_account_age(created_utc: float) -> str:
         return f"{days}d"
 
 
+def calculate_warmup_status(created_utc: float, total_karma: int) -> str:
+    """Determine account warmup status based on age and karma.
+
+    Reddit accounts need gradual activity ramp-up. This function classifies
+    accounts into warmup stages to help identify safe activity levels.
+
+    Args:
+        created_utc: Unix timestamp from Reddit API (UTC)
+        total_karma: Combined karma score
+
+    Returns:
+        Status string: "unknown", "new", "warming", "ready", or "established"
+    """
+    if created_utc <= 0:
+        return "unknown"
+
+    created = datetime.fromtimestamp(created_utc, tz=timezone.utc)
+    now = datetime.now(tz=timezone.utc)
+    delta = now - created
+    age_days = delta.days
+
+    if age_days < 0:
+        return "unknown"  # Future date (shouldn't happen)
+
+    # Check thresholds in order from most established to newest
+    if age_days >= 90 and total_karma >= 500:
+        return "established"
+    elif age_days >= 30 and total_karma >= 100:
+        return "ready"
+    elif age_days >= 7 or total_karma >= 10:
+        return "warming"
+    else:
+        return "new"
+
+
 @dataclass
 class DolphinProfile:
     """Browser profile from Dolphin Anty."""
