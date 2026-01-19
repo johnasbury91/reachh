@@ -45,7 +45,7 @@ class ProxyHealthChecker:
         """
         return await client.get(url, headers=headers)
 
-    async def check(self, proxy_url: str, timeout: float = 10.0) -> ProxyHealth:
+    async def check(self, proxy_url: str, timeout: float = 30.0) -> ProxyHealth:
         """
         Test if proxy can reach Reddit.
 
