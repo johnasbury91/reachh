@@ -9,23 +9,24 @@ from datetime import datetime
 import gspread
 
 from config import settings
-from models import AccountResult, calculate_account_age
+from models import AccountResult, calculate_account_age, calculate_warmup_status
 
 
-# Column headers for the Google Sheet (12 columns: A-L)
+# Column headers for the Google Sheet (13 columns: A-M)
 HEADERS = [
-    "profile_id",
-    "username",
-    "status",
-    "total_karma",
-    "comment_karma",
-    "link_karma",
-    "account_age",
-    "owner",
-    "proxy",
-    "proxy_health",
-    "karma_delta",
-    "checked_at",
+    "profile_id",      # A
+    "username",        # B
+    "status",          # C
+    "total_karma",     # D
+    "comment_karma",   # E
+    "link_karma",      # F
+    "account_age",     # G
+    "warmup_status",   # H
+    "owner",           # I
+    "proxy",           # J
+    "proxy_health",    # K
+    "karma_delta",     # L
+    "checked_at",      # M
 ]
 
 
@@ -33,6 +34,11 @@ def _to_row(result: AccountResult) -> list:
     """Convert AccountResult to a row list matching HEADERS order."""
     # Calculate account age from Reddit created_utc
     account_age = calculate_account_age(result.reddit.created_utc)
+
+    # Calculate warmup status from age and karma
+    warmup_status = calculate_warmup_status(
+        result.reddit.created_utc, result.reddit.total_karma
+    )
 
     # Format karma_delta as +N or -N for readability
     if result.karma_change > 0:
@@ -55,6 +61,7 @@ def _to_row(result: AccountResult) -> list:
         result.reddit.comment_karma,
         result.reddit.link_karma,
         account_age,
+        warmup_status,
         result.profile.owner,
         result.profile.proxy or "None",
         proxy_health_status,
@@ -73,7 +80,7 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
 
     if not first_row or first_row != HEADERS:
         # Clear first row and write headers
-        worksheet.update("A1:L1", [HEADERS])
+        worksheet.update("A1:M1", [HEADERS])
 
 
 def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResult]) -> None:
@@ -111,6 +118,7 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
         "",  # comment_karma
         "",  # link_karma
         "",  # account_age
+        "",  # warmup_status
         "",  # owner
         f"{proxy_fail_count} failing" if proxy_fail_count else "All OK",  # proxy
         "",  # proxy_health
@@ -118,7 +126,7 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
         datetime.now().strftime("%Y-%m-%d %H:%M"),  # checked_at
     ]
 
-    worksheet.update("A2:L2", [summary_row])
+    worksheet.update("A2:M2", [summary_row])
 
 
 def sync_to_sheet(results: list[AccountResult]) -> dict:
@@ -180,7 +188,7 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
             # Update existing row
             row_num = existing_ids[profile_id]
             updates.append({
-                "range": f"A{row_num}:L{row_num}",
+                "range": f"A{row_num}:M{row_num}",
                 "values": [row_data],
             })
         else:
