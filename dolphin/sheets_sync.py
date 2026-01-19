@@ -10,9 +10,10 @@ import gspread
 
 from config import settings
 from models import AccountResult, calculate_account_age, calculate_warmup_status
+from warmup import get_warmup_limits, check_warmup_thresholds
 
 
-# Column headers for the Google Sheet (13 columns: A-M)
+# Column headers for the Google Sheet (17 columns: A-Q)
 HEADERS = [
     "profile_id",      # A
     "username",        # B
@@ -26,7 +27,11 @@ HEADERS = [
     "proxy",           # J
     "proxy_health",    # K
     "karma_delta",     # L
-    "checked_at",      # M
+    "comments_today",  # M: Daily comment count
+    "posts_today",     # N: Daily post count
+    "warmup_tier",     # O: new/warming/ready/established
+    "limit_status",    # P: OK/WARNING/EXCEEDED
+    "checked_at",      # Q
 ]
 
 # Archive tab has main headers + archive metadata (15 columns: A-O)
@@ -56,6 +61,30 @@ def _to_row(result: AccountResult) -> list:
     if result.proxy_health:
         proxy_health_status = result.proxy_health.status
 
+    # Get activity counts (default to 0 if None)
+    comments_today = 0
+    posts_today = 0
+    if result.activity:
+        comments_today = result.activity.comments_today
+        posts_today = result.activity.posts_today
+
+    # Get warmup tier and calculate limit status
+    limits_info = get_warmup_limits(result.reddit.created_utc)
+    warmup_tier = limits_info["tier"]
+
+    # Determine limit_status based on threshold checks
+    limit_status = "N/A"
+    if result.activity and limits_info["limits"]:
+        warnings = check_warmup_thresholds(result.activity, limits_info["limits"])
+        if any("EXCEEDED" in w for w in warnings):
+            limit_status = "EXCEEDED"
+        elif any("WARNING" in w for w in warnings):
+            limit_status = "WARNING"
+        else:
+            limit_status = "OK"
+    elif result.reddit.status == "active":
+        limit_status = "OK"  # Active but no activity data yet
+
     return [
         result.profile.id,
         result.profile.name,
@@ -69,6 +98,10 @@ def _to_row(result: AccountResult) -> list:
         result.profile.proxy or "None",
         proxy_health_status,
         karma_delta,
+        comments_today,
+        posts_today,
+        warmup_tier,
+        limit_status,
         result.checked_at or datetime.now().isoformat(),
     ]
 
@@ -83,7 +116,7 @@ def _ensure_headers(worksheet: gspread.Worksheet) -> None:
 
     if not first_row or first_row != HEADERS:
         # Clear first row and write headers
-        worksheet.update("A1:M1", [HEADERS])
+        worksheet.update("A1:Q1", [HEADERS])
 
 
 def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResult]) -> None:
@@ -94,6 +127,11 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
     total_karma = 0
     total_delta = 0
 
+    # Count warmup limit statuses
+    limit_status_counts: dict[str, int] = {"OK": 0, "WARNING": 0, "EXCEEDED": 0}
+    total_comments = 0
+    total_posts = 0
+
     for result in results:
         status = result.reddit.status
         status_counts[status] = status_counts.get(status, 0) + 1
@@ -102,6 +140,22 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
 
         if result.proxy_health and result.proxy_health.status != "pass":
             proxy_fail_count += 1
+
+        # Count activity and limit status
+        if result.activity:
+            total_comments += result.activity.comments_today
+            total_posts += result.activity.posts_today
+
+            # Calculate limit status for this result
+            limits_info = get_warmup_limits(result.reddit.created_utc)
+            if limits_info["limits"]:
+                warnings = check_warmup_thresholds(result.activity, limits_info["limits"])
+                if any("EXCEEDED" in w for w in warnings):
+                    limit_status_counts["EXCEEDED"] += 1
+                elif any("WARNING" in w for w in warnings):
+                    limit_status_counts["WARNING"] += 1
+                else:
+                    limit_status_counts["OK"] += 1
 
     total = len(results)
     active = status_counts.get("active", 0)
@@ -112,7 +166,14 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
     # Format delta with sign
     delta_str = f"+{total_delta}" if total_delta >= 0 else str(total_delta)
 
-    # Build summary cells matching header columns
+    # Format limit status summary
+    limit_summary = f"{limit_status_counts['OK']} OK"
+    if limit_status_counts["WARNING"] > 0:
+        limit_summary += f" / {limit_status_counts['WARNING']} warn"
+    if limit_status_counts["EXCEEDED"] > 0:
+        limit_summary += f" / {limit_status_counts['EXCEEDED']} over"
+
+    # Build summary cells matching header columns (17 columns: A-Q)
     summary_row = [
         "SUMMARY",  # profile_id column
         f"{total} accounts",  # username column
@@ -126,10 +187,14 @@ def _update_summary_row(worksheet: gspread.Worksheet, results: list[AccountResul
         f"{proxy_fail_count} failing" if proxy_fail_count else "All OK",  # proxy
         "",  # proxy_health
         delta_str,  # karma_delta
+        total_comments,  # comments_today
+        total_posts,  # posts_today
+        "",  # warmup_tier
+        limit_summary,  # limit_status
         datetime.now().strftime("%Y-%m-%d %H:%M"),  # checked_at
     ]
 
-    worksheet.update("A2:M2", [summary_row])
+    worksheet.update("A2:Q2", [summary_row])
 
 
 def sync_to_sheet(results: list[AccountResult]) -> dict:
@@ -191,7 +256,7 @@ def sync_to_sheet(results: list[AccountResult]) -> dict:
             # Update existing row
             row_num = existing_ids[profile_id]
             updates.append({
-                "range": f"A{row_num}:M{row_num}",
+                "range": f"A{row_num}:Q{row_num}",
                 "values": [row_data],
             })
         else:

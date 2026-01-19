@@ -128,3 +128,35 @@ def notify_proxy_failures(proxies: list[str]) -> None:
         title="Proxy Alert",
         message=f"Proxies failing ({count}): {proxy_list}",
     )
+
+
+def notify_warmup_warnings(warnings: list[dict]) -> None:
+    """
+    Notify about accounts approaching/exceeding warmup limits.
+
+    Args:
+        warnings: List of dicts with 'username' and 'message' keys
+    """
+    if not warnings:
+        return
+
+    exceeded = [w for w in warnings if "EXCEEDED" in w["message"]]
+    approaching = [w for w in warnings if "WARNING" in w["message"]]
+
+    if exceeded:
+        user_list = ", ".join(w["username"] for w in exceeded[:5])
+        if len(exceeded) > 5:
+            user_list += f" (+{len(exceeded) - 5} more)"
+        send_alert(
+            title="Warmup Limit EXCEEDED",
+            message=f"{len(exceeded)} account(s) over limit: {user_list}",
+        )
+
+    if approaching:
+        user_list = ", ".join(w["username"] for w in approaching[:5])
+        if len(approaching) > 5:
+            user_list += f" (+{len(approaching) - 5} more)"
+        send_alert(
+            title="Warmup Warning",
+            message=f"{len(approaching)} account(s) near limit: {user_list}",
+        )

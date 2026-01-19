@@ -121,6 +121,7 @@ class AccountResult:
     karma_change: int = 0
     checked_at: str = ""
     proxy_health: ProxyHealth | None = None
+    activity: "ActivityCounts | None" = None
 
 
 @dataclass
