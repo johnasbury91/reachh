@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-19)
+See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Ready for next milestone
+**Current focus:** v4 Reliability & Insights
 
 ## Current Position
 
-Milestone: v3 COMPLETE (Account Survival)
-Phase: N/A - milestone complete
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-01-19 — v3 milestone completed and archived
+Milestone: v4 (Reliability & Insights)
+Phase: 7 - Reliable Operations
+Plan: Not started
+Status: Ready for phase planning
+Last activity: 2026-01-20 — v4 roadmap created
 
-Progress: [██████████] 100% (6/6 plans complete)
+Progress: [----------] 0% (0/2 phases complete)
 
 ## Performance Metrics
 
@@ -24,12 +24,12 @@ Progress: [██████████] 100% (6/6 plans complete)
 - Average duration: 5.9 min
 - Total execution time: ~2.3 hours
 
-**v3 Milestone:**
+**v4 Milestone:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01. Proxy & Session Audit | 3/3 | 8 min | 2.7 min |
-| 02. Warmup Management | 3/3 | 10 min | 3.3 min |
+| 07. Reliable Operations | 0/? | - | - |
+| 08. Health Visibility | 0/? | - | - |
 
 ## Accumulated Context
 
@@ -44,15 +44,20 @@ Recent v3 decisions:
 - Activity counts return 0 on errors (graceful degradation)
 - Warmup alerts at 80% (WARNING) and 100% (EXCEEDED) thresholds
 
+v4 context:
+- 21 active profiles were deleted due to false `not_found` results from rate limiting
+- Rate limiting causes Reddit to return errors that were misinterpreted as "account not found"
+
 ### Pending Todos
 
-None - milestone complete.
+None - phase planning needed.
 
 ### Known Issues
 
 - 102 profiles sharing 32 proxy sessions (detected, remediation pending)
 - 12 profiles with no proxy configured
 - 14 profiles missing geo-targeting
+- Rate limiting causing false positives in Reddit checker (to be fixed in Phase 7)
 
 ## Milestone Archives
 
@@ -61,6 +66,6 @@ None - milestone complete.
 
 ## Session Continuity
 
-Last session: 2026-01-19
-Stopped at: v3 milestone complete
+Last session: 2026-01-20
+Stopped at: v4 roadmap created, ready for phase 7 planning
 Resume file: None

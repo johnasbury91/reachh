@@ -37,15 +37,15 @@
 
 ## Traceability
 
-| Requirement | Phase | Plan |
-|-------------|-------|------|
-| REL-01 | TBD | TBD |
-| REL-02 | TBD | TBD |
-| REL-03 | TBD | TBD |
-| AUTO-01 | TBD | TBD |
-| AUTO-02 | TBD | TBD |
-| AUTO-03 | TBD | TBD |
-| VIS-01 | TBD | TBD |
-| VIS-02 | TBD | TBD |
-| VIS-03 | TBD | TBD |
-| VIS-04 | TBD | TBD |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| REL-01 | Phase 7 | Pending |
+| REL-02 | Phase 7 | Pending |
+| REL-03 | Phase 7 | Pending |
+| AUTO-01 | Phase 7 | Pending |
+| AUTO-02 | Phase 7 | Pending |
+| AUTO-03 | Phase 7 | Pending |
+| VIS-01 | Phase 8 | Pending |
+| VIS-02 | Phase 8 | Pending |
+| VIS-03 | Phase 8 | Pending |
+| VIS-04 | Phase 8 | Pending |
