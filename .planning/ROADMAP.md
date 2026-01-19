@@ -7,7 +7,7 @@ Dolphin v3 focuses on account survival — stopping the loss of new accounts in 
 ## Phases
 
 - [x] **Phase 1: Proxy & Session Audit** - Full audit of proxy setup, cookie management, and Dolphin configuration
-- [ ] **Phase 2: Warmup Management** - Activity limits, tracking, and alerts for new accounts
+- [x] **Phase 2: Warmup Management** - Activity limits, tracking, and alerts for new accounts
 
 ## Phase Details
 
@@ -40,17 +40,18 @@ Plans:
 **Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Warmup limits module & activity counting (wave 1)
-- [ ] 02-02-PLAN.md — Tracker integration, sheets columns, alerts (wave 2)
-- [ ] 02-03-PLAN.md — Warmup playbook & troubleshooting docs (wave 3)
+- [x] 02-01-PLAN.md — Warmup limits module & activity counting (wave 1)
+- [x] 02-02-PLAN.md — Tracker integration, sheets columns, alerts (wave 2)
+- [x] 02-03-PLAN.md — Warmup playbook & troubleshooting docs (wave 3)
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Proxy & Session Audit | 3/3 | Complete | 2026-01-19 |
-| 2. Warmup Management | 0/3 | Not Started | — |
+| 2. Warmup Management | 3/3 | Complete | 2026-01-19 |
 
 ---
 *Roadmap created: 2026-01-19*
 *Phase 1 complete: 2026-01-19*
+*Phase 2 complete: 2026-01-19*
