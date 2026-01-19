@@ -121,3 +121,13 @@ class AccountResult:
     karma_change: int = 0
     checked_at: str = ""
     proxy_health: ProxyHealth | None = None
+
+
+@dataclass
+class ActivityCounts:
+    """Daily activity counts fetched from Reddit API."""
+
+    username: str
+    comments_today: int = 0
+    posts_today: int = 0
+    fetched_at: str = ""  # ISO timestamp
