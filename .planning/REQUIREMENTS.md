@@ -44,19 +44,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROXY-01 | Phase 1 | Pending |
-| PROXY-02 | Phase 1 | Pending |
-| PROXY-03 | Phase 1 | Pending |
-| PROXY-04 | Phase 1 | Pending |
-| PROXY-05 | Phase 1 | Pending |
+| PROXY-01 | Phase 1 | Complete |
+| PROXY-02 | Phase 1 | Complete |
+| PROXY-03 | Phase 1 | Complete |
+| PROXY-04 | Phase 1 | Complete |
+| PROXY-05 | Phase 1 | Complete |
 | WARMUP-01 | Phase 2 | Pending |
 | WARMUP-02 | Phase 2 | Pending |
 | WARMUP-03 | Phase 2 | Pending |
 | WARMUP-04 | Phase 2 | Pending |
-| SESSION-01 | Phase 1 | Pending |
-| SESSION-02 | Phase 1 | Pending |
-| SESSION-03 | Phase 1 | Pending |
-| DOCS-01 | Phase 1 | Pending |
+| SESSION-01 | Phase 1 | Complete |
+| SESSION-02 | Phase 1 | Complete |
+| SESSION-03 | Phase 1 | Complete |
+| DOCS-01 | Phase 1 | Complete |
 | DOCS-02 | Phase 2 | Pending |
 | DOCS-03 | Phase 2 | Pending |
 
