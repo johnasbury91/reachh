@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 02 - Warmup Management (activity limits and enforcement)
+**Current focus:** Milestone v3 COMPLETE - Ready for Phase 06
 
 ## Current Position
 
 Milestone: v3 (Proxy & Session Audit + Warmup Management)
-Phase: 02-warmup-management (2 of 2)
-Plan: 02 of 3 complete
-Status: In progress
-Last activity: 2026-01-19 - Completed 02-02-PLAN.md (Tracker Integration)
+Phase: 02-warmup-management (2 of 2) - COMPLETE
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 02-03-PLAN.md (Warmup Documentation)
 
-Progress: [█████░░░░░] 50% (5/10 plans in milestone)
+Progress: [██████░░░░] 60% (6/10 plans in milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22 (17 from v2 + 5 from v3)
-- Average duration: 6.1 min
-- Total execution time: 2.0 hours + 15 min
+- Total plans completed: 23 (17 from v2 + 6 from v3)
+- Average duration: 5.9 min
+- Total execution time: 2.0 hours + 18 min
 
 **By Phase (v3):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01. Proxy & Session Audit | 3/3 | 8 min | 2.7 min |
-| 02. Warmup Management | 2/3 | 7 min | 3.5 min |
+| 02. Warmup Management | 3/3 | 10 min | 3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min (01-02), 2 min (01-03), 2 min (02-01), 5 min (02-02)
+- Last 5 plans: 2 min (01-03), 2 min (02-01), 5 min (02-02), 3 min (02-03)
 - Trend: Fast execution maintained
 
 *Updated after each plan completion*
@@ -68,10 +68,12 @@ Recent decisions affecting current work:
 - [v3 02-02]: Activity field on AccountResult optional (None for non-active)
 - [v3 02-02]: Limit status shows N/A for non-active, OK for active without data
 - [v3 02-02]: Summary row includes aggregate warmup limit counts
+- [v3 02-03]: Documentation cross-references: each doc links to related docs
+- [v3 02-03]: Tier limits in docs match warmup.py WARMUP_TIERS exactly
 
 ### Pending Todos
 
-None - continue with 02-03.
+None - Phase 02 complete. Ready for Phase 06 (Data Hygiene).
 
 ### Blockers/Concerns
 
@@ -102,13 +104,13 @@ None currently.
 - New account checklist for freelancer onboarding
 - Common mistakes documented with real audit findings
 
-## Phase 02 Progress (Warmup Management) - IN PROGRESS
+## Phase 02 Progress (Warmup Management) - COMPLETE
 
 | Plan | Name | Status |
 |------|------|--------|
 | 02-01 | Warmup Limits and Activity Counting | COMPLETE |
 | 02-02 | Tracker Integration | COMPLETE |
-| 02-03 | Warmup Alerting | PENDING |
+| 02-03 | Warmup Documentation | COMPLETE |
 
 **Completed in 02-01:**
 - WARMUP_TIERS dict with 4 age-based tiers (new/warming/ready/established)
@@ -122,6 +124,11 @@ None currently.
 - notify_warmup_warnings() function for threshold alerts
 - Tracker fetches activity counts for active accounts
 - WARMUP STATUS section in tracker summary logging
+
+**Completed in 02-03:**
+- WARMUP_PLAYBOOK.md: 370-line day-by-day warmup schedule
+- TROUBLESHOOTING.md: 292-line ban diagnosis guide
+- Complete documentation for operator onboarding
 
 ## Phase 01 Deliverables Summary
 
@@ -138,6 +145,18 @@ None currently.
 - 1 profile using rotating proxy (port 823)
 - 102 profiles sharing 32 sessions
 - 14 profiles missing geo-targeting
+
+## Phase 02 Deliverables Summary
+
+**Code:**
+- `dolphin/warmup.py` - WARMUP_TIERS, get_warmup_limits(), check_warmup_thresholds()
+- `dolphin/models.py` - ActivityCounts dataclass
+- `dolphin/lib/reddit.py` - get_activity_counts() method
+- `dolphin/tracker.py` - Warmup columns (L-Q), notify_warmup_warnings()
+
+**Documentation:**
+- `dolphin/docs/WARMUP_PLAYBOOK.md` - Day-by-day warmup schedule
+- `dolphin/docs/TROUBLESHOOTING.md` - Ban diagnosis and recovery
 
 ## v2 Milestone Summary (Archived)
 
@@ -156,6 +175,6 @@ Key deliverables:
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:49 UTC
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-01-19 08:53 UTC
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
