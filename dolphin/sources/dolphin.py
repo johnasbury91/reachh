@@ -151,3 +151,49 @@ class DolphinClient:
             page += 1
 
         return profiles
+
+    async def update_profile_proxy(
+        self,
+        profile_id: str,
+        proxy_type: str,
+        host: str,
+        port: int,
+        login: str,
+        password: str,
+    ) -> bool:
+        """Update a profile's proxy configuration.
+
+        Args:
+            profile_id: Dolphin profile ID
+            proxy_type: Proxy type (http, socks5, etc.)
+            host: Proxy hostname
+            port: Proxy port
+            login: Proxy username (with geo params)
+            password: Proxy password
+
+        Returns:
+            True if update successful, False otherwise
+        """
+        if not self.client:
+            raise RuntimeError("Use async context manager")
+
+        # Build full proxy URL for the 'name' field
+        full_url = f"{proxy_type}://{login}:{password}@{host}:{port}"
+
+        proxy_data = {
+            "proxy": {
+                "type": proxy_type,
+                "host": host,
+                "port": port,
+                "name": full_url,
+                "login": login,
+                "password": password,
+            }
+        }
+
+        response = await self.client.patch(
+            f"/browser_profiles/{profile_id}",
+            json=proxy_data,
+        )
+
+        return response.status_code == 200

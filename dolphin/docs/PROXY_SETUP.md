@@ -18,6 +18,9 @@ Reddit tracks IP changes and flags accounts that switch IPs frequently. Using ro
 2. Navigate to Residential Proxies section
 3. Note your username and password
 
+> **API Reference:** Get available locations via API:
+> https://documenter.getpostman.com/view/7041120/2sAY4rGRZC#99596afc-d7f7-4fb6-9992-60058f2dec0c
+
 ### Proxy Format
 
 ```
