@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 01 Complete - Ready for account remediation
+**Current focus:** Phase 02 - Warmup Management (activity limits and enforcement)
 
 ## Current Position
 
-Milestone: v3 (Proxy & Session Audit)
-Phase: 01-proxy-session-audit (1 of 1)
-Plan: 03 of 3 complete
-Status: PHASE COMPLETE
-Last activity: 2026-01-19 - Completed 01-03-PLAN.md (Proxy Setup Documentation)
+Milestone: v3 (Proxy & Session Audit + Warmup Management)
+Phase: 02-warmup-management (2 of 2)
+Plan: 01 of 3 complete
+Status: In progress
+Last activity: 2026-01-19 - Completed 02-01-PLAN.md (Warmup Limits and Activity Counting)
 
-Progress: [███] 100% (3/3 plans in phase)
+Progress: [████░░░░░░] 40% (4/10 plans in milestone)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20 (17 from v2 + 3 from v3)
-- Average duration: 6.4 min
-- Total execution time: 2.0 hours + 8 min
+- Total plans completed: 21 (17 from v2 + 4 from v3)
+- Average duration: 6.2 min
+- Total execution time: 2.0 hours + 10 min
 
 **By Phase (v3):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01. Proxy & Session Audit | 3/3 | 8 min | 2.7 min |
+| 02. Warmup Management | 1/3 | 2 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 2 min, 2 min (01-01), 4 min (01-02), 2 min (01-03)
+- Last 5 plans: 2 min (01-01), 4 min (01-02), 2 min (01-03), 2 min (02-01)
 - Trend: Fast execution maintained
 
 *Updated after each plan completion*
@@ -60,10 +61,14 @@ Recent decisions affecting current work:
 - [v3 01-03]: Document real audit findings in common mistakes section
 - [v3 01-03]: Include verification links (whatismyipaddress.com, browserleaks.com)
 - [v3 01-03]: Timezone matching guide for US states/cities
+- [v3 02-01]: Tier boundaries: new (<7d), warming (7-14d), ready (14-30d), established (30d+)
+- [v3 02-01]: Alert threshold: 80% of limit triggers WARNING, 100% triggers EXCEEDED
+- [v3 02-01]: Activity counts return 0 on errors (graceful degradation)
+- [v3 02-01]: Votes not tracked (Reddit API keeps votes private)
 
 ### Pending Todos
 
-None - Phase 01 complete.
+None - continue with 02-02.
 
 ### Blockers/Concerns
 
@@ -93,6 +98,21 @@ None currently.
 - DOLPHIN_CONFIG.md: Profile creation and verification
 - New account checklist for freelancer onboarding
 - Common mistakes documented with real audit findings
+
+## Phase 02 Progress (Warmup Management) - IN PROGRESS
+
+| Plan | Name | Status |
+|------|------|--------|
+| 02-01 | Warmup Limits and Activity Counting | COMPLETE |
+| 02-02 | Tracker Integration | PENDING |
+| 02-03 | Warmup Alerting | PENDING |
+
+**Completed in 02-01:**
+- WARMUP_TIERS dict with 4 age-based tiers (new/warming/ready/established)
+- get_warmup_limits() for tier lookup by account created_utc
+- check_warmup_thresholds() for 80%/100% limit enforcement
+- ActivityCounts dataclass for daily comment/post tracking
+- get_activity_counts() method on RedditChecker
 
 ## Phase 01 Deliverables Summary
 
@@ -127,6 +147,6 @@ Key deliverables:
 
 ## Session Continuity
 
-Last session: 2026-01-19 08:15 UTC
-Stopped at: Completed 01-03-PLAN.md (Phase 01 Complete)
+Last session: 2026-01-19 08:43 UTC
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
