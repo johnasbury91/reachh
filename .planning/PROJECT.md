@@ -1,71 +1,71 @@
-# Dolphin v2
+# Dolphin
 
 ## What This Is
 
-A Python automation tool that tracks Reddit account farm operations and syncs to Google Sheets. Replaces manual spreadsheet updates with automated pulls from Dolphin Anty API, Reddit karma checks, and proxy health monitoring — giving you and your freelancers a real-time view of account status at a glance.
+A Python automation tool that tracks Reddit account farm operations and syncs to Google Sheets. Pulls from Dolphin Anty API, checks Reddit karma, monitors proxy health, detects bans/shadowbans, and archives stale accounts — giving you and your freelancers a real-time view of account status at a glance.
 
 ## Core Value
 
-See the health of your entire Reddit account farm in one Google Sheet — accounts, karma, bans, proxies — without running scripts or manually updating cells.
+See the health of your entire Reddit account farm in one Google Sheet — accounts, karma, bans, proxies — updated automatically every day.
 
-## Requirements
+## Current State
 
-### Validated
+**Milestone v2 Complete** (2026-01-19)
 
-(None yet — ship to validate)
+The system is production-ready and runs automatically:
+- Daily tracker runs at 9 AM via launchd
+- Weekly karma reports on Sundays at 10 AM
+- Notifications on bans and proxy failures
+- Archive tab for stale/dead accounts
 
-### Active
+### What's Running
 
-- [ ] Pull all browser profiles from Dolphin Anty API
-- [ ] Check Reddit karma for each account (total, comment, link)
-- [ ] Detect account status (active, banned, suspended, shadowbanned)
-- [ ] Test proxy health across multiple providers
-- [ ] Sync all data to Google Sheets automatically
-- [ ] Show clear columns: Username, Status, Niche, Freelancer, Karma, Proxy
-- [ ] Track karma change over time (daily delta)
-- [ ] Support multiple freelancers (each sees their rows)
+| Component | Schedule | Purpose |
+|-----------|----------|---------|
+| tracker.py | Daily 9 AM | Sync all accounts to Google Sheet |
+| reporting.py | Sunday 10 AM | Weekly karma velocity report |
 
-### Out of Scope
+### Google Sheet Columns (13)
 
-- Web dashboard — using Google Sheets for now, validate process first
-- Dolphin Anty profile name cleanup — skip for now, focus on tracker
-- Task management for freelancers — handle separately
-- Integration with Reachh client app — different project
-- Integration with task server — different project
+Username, Status, Niche, Freelancer, Karma, Comment Karma, Link Karma, Warmup Status, Account Age, Karma Delta, Proxy, Proxy Health, Last Checked
 
-## Context
+### Key Files
 
-**Current state:**
-- `dolphin/tracker.py` — Python script that pulls from Dolphin Anty, checks Reddit karma, outputs CSV
-- `dolphin/karma_history.json` — Historical karma data
-- Manual spreadsheets for account/proxy/freelancer tracking (incomplete, tedious)
+- `dolphin/tracker.py` — Main orchestrator
+- `dolphin/sheets_sync.py` — Google Sheets sync
+- `dolphin/state.py` — State tracking for alerts
+- `dolphin/alerts.py` — macOS/Slack notifications
+- `dolphin/reporting.py` — Weekly reports
 
-**Existing infrastructure:**
-- Dolphin Anty API access (credentials in `dolphin/config.py`)
-- Reddit accounts managed through Dolphin Anty browser profiles
-- Multiple proxy providers (Decodo and others)
-- Freelancer team managing accounts
+## Validated Learnings
 
-**Pain points being solved:**
-- Manual spreadsheet updates are tedious and fall behind
-- Can't see at a glance which accounts are banned/healthy
-- No automated proxy health checks
-- Karma tracking requires running scripts manually
+| Learning | Source | Impact |
+|----------|--------|--------|
+| Google Sheets works well for this use case | v2 usage | Continue with Sheets, no web dashboard needed yet |
+| Daily runs are sufficient frequency | v2 usage | No need for more frequent runs |
+| Freelancers can filter by their name in Sheets | v2 usage | No need for per-user views in code |
+
+## Ideas for Future
+
+- Web dashboard (if Sheets becomes limiting)
+- Historical trend charts in Sheets (ANALYTICS-02)
+- Integration with task server
+- Account health scoring
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Web dashboard | Sheets works, validate need first |
+| Reddit automation/posting | Different product |
+| Account creation | High risk, different tool |
+| Task assignment | Separate system |
 
 ## Constraints
 
-- **Tech stack**: Python (extend existing `tracker.py`)
-- **Output**: Google Sheets (not a web app — validate process first)
-- **Scope**: MVP — keep it simple, don't over-engineer
-- **Proxy providers**: Must support multiple providers, not just Decodo
-
-## Key Decisions
-
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Google Sheets over web app | Validate the process before building software | — Pending |
-| Extend existing tracker.py | Don't rewrite, improve what works | — Pending |
-| Skip profile name cleanup | Focus on tracking first, clean data later | — Pending |
+- **Tech stack**: Python (existing codebase)
+- **Output**: Google Sheets
+- **Automation**: macOS launchd
 
 ---
-*Last updated: 2026-01-18 after initialization*
+*Last updated: 2026-01-19 after v2 milestone completion*
