@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** See the health of your entire Reddit account farm in one Google Sheet automatically
-**Current focus:** Phase 6 - Data Hygiene & Reliability - IN PROGRESS
+**Current focus:** PROJECT COMPLETE - All 6 phases delivered
 
 ## Current Position
 
 Phase: 6 of 6 (Data Hygiene & Reliability)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-01-19 - Completed 06-03-PLAN.md (Stale Profile Archival)
+Plan: 4 of 4 in current phase
+Status: COMPLETE
+Last activity: 2026-01-19 - Completed 06-04-PLAN.md (Dead Account Archival)
 
-Progress: [████████████████░] 94% (16/17 plans)
+Progress: [█████████████████] 100% (17/17 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 7.5 min
+- Total plans completed: 17
+- Average duration: 7.2 min
 - Total execution time: 2.0 hours
 
 **By Phase:**
@@ -32,11 +32,11 @@ Progress: [████████████████░] 94% (16/17 plans
 | 3. Detection | 3/3 | 11 min | 3.7 min |
 | 4. Automation | 1/1 | 8 min | 8.0 min |
 | 5. Alerts & Reporting | 3/3 | 10 min | 3.3 min |
-| 6. Data Hygiene | 3/4 | 10 min | 3.3 min |
+| 6. Data Hygiene | 4/4 | 12 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 3 min, 4 min, 4 min, 2 min
-- Trend: Phase 6 continues fast execution
+- Last 5 plans: 3 min, 4 min, 4 min, 2 min, 2 min
+- Trend: Phase 6 maintained fast execution
 
 *Updated after each plan completion*
 
@@ -96,10 +96,14 @@ Recent decisions affecting current work:
 - [06-03]: Stale detection compares sheet IDs vs Dolphin IDs each run
 - [06-03]: Delete rows in reverse order to preserve indices
 - [06-03]: Archive reason is "deleted_from_dolphin"
+- [06-04]: Track not_found duration via account_history in state file
+- [06-04]: 7-day threshold before archiving dead accounts
+- [06-04]: Archive reason is "dead_account_7d" to distinguish from stale profiles
+- [06-04]: Recovered accounts clear their not_found tracking
 
 ### Pending Todos
 
-None - 06-03 complete.
+None - PROJECT COMPLETE.
 
 ### Blockers/Concerns
 
@@ -182,11 +186,28 @@ All Phase 5 requirements verified:
 **Note:** 05-03 was executed out of order. alerts.py dependency was created inline.
 
 Alerting components:
-- state.py: load_state(), save_state(), build_current_state(), detect_changes()
+- state.py: load_state(), save_state(), build_current_state(), detect_changes(), update_not_found_tracking()
 - alerts.py: notify_bans(), notify_proxy_failures(), send_alert()
 - tracker.py: integrated state comparison and notifications
 - weekly_karma_report.py: weekly summary with karma velocity
 - launchd plist for Sunday 10 AM weekly report
+
+## Phase 6 Completion Summary
+
+All Phase 6 requirements verified:
+
+| Plan | Name | Status |
+|------|------|--------|
+| 06-01 | Retry Logic | COMPLETE |
+| 06-02 | Warmup Status | COMPLETE |
+| 06-03 | Stale Profile Archival | COMPLETE |
+| 06-04 | Dead Account Archival | COMPLETE |
+
+Data hygiene components:
+- Exponential backoff retry for transient network failures
+- Warmup status classification (new/warming/ready/established)
+- Archive tab for deleted profiles (deleted_from_dolphin)
+- Dead account tracking and archival (dead_account_7d after 7 days)
 
 ## Phase Progress
 
@@ -197,12 +218,12 @@ Alerting components:
 | 3. Detection | 3/3 | COMPLETE |
 | 4. Automation | 1/1 | COMPLETE |
 | 5. Alerts & Reporting | 3/3 | COMPLETE |
-| 6. Data Hygiene | 3/4 | IN PROGRESS |
+| 6. Data Hygiene | 4/4 | COMPLETE |
 
-**Total:** 16/17 plans complete, 2.0 hours execution time
+**Total:** 17/17 plans complete, 2.0 hours execution time
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 06-03-PLAN.md (Stale Profile Archival)
+Stopped at: PROJECT COMPLETE - All phases delivered
 Resume file: None
