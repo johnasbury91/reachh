@@ -16,9 +16,10 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-from alerts import notify_bans, notify_proxy_failures
+from alerts import notify_bans, notify_proxy_failures, notify_warmup_warnings
 from config import setup_logging
 from models import DolphinProfile, RedditStatus, AccountResult, ProxyHealth
+from warmup import get_warmup_limits, check_warmup_thresholds
 from sheets_sync import sync_to_sheet, archive_stale_profiles, archive_dead_accounts
 from sources import DolphinClient, RedditChecker
 from sources.proxy_health import ProxyHealthChecker
@@ -120,8 +121,14 @@ async def run_tracker(limit: int | None = None) -> int:
                 # Check Reddit status
                 status = await reddit.check_account(profile.name)
 
+                # Fetch activity counts for active accounts
+                activity = None
                 if status.status == "active":
                     logger.info(f"  Karma: {status.total_karma} (comment: {status.comment_karma}, link: {status.link_karma})")
+
+                    # Fetch activity counts
+                    activity = await reddit.get_activity_counts(profile.name)
+                    logger.debug(f"  Activity: {activity.comments_today} comments, {activity.posts_today} posts today")
 
                     # Calculate karma change
                     karma_change = 0
@@ -155,11 +162,33 @@ async def run_tracker(limit: int | None = None) -> int:
                     karma_change=karma_change,
                     checked_at=datetime.now().isoformat(),
                     proxy_health=proxy_health,
+                    activity=activity,
                 )
                 results.append(result)
 
         # Save history
         save_history(history)
+
+        # Check warmup thresholds and collect warnings
+        warmup_warnings = []
+        for result in results:
+            if result.activity and result.reddit.status == "active":
+                limits_info = get_warmup_limits(result.reddit.created_utc)
+                if limits_info["limits"]:
+                    warnings = check_warmup_thresholds(
+                        result.activity,
+                        limits_info["limits"],
+                    )
+                    for warning in warnings:
+                        warmup_warnings.append({
+                            "username": result.profile.name,
+                            "message": warning,
+                        })
+
+        # Send warmup alerts
+        if warmup_warnings:
+            logger.warning(f"Warmup warnings: {len(warmup_warnings)} account(s)")
+            notify_warmup_warnings(warmup_warnings)
 
         # State tracking and alerts
         try:
@@ -250,6 +279,28 @@ async def run_tracker(limit: int | None = None) -> int:
         for cat, count in categories.most_common():
             logger.info(f"  {cat}: {count}")
         logger.info(f"Total karma across all accounts: {total_karma_all}")
+
+        # Log warmup status breakdown
+        warmup_tiers = Counter()
+        limit_statuses = Counter()
+        for r in results:
+            if r.activity and r.reddit.status == "active":
+                limits_info = get_warmup_limits(r.reddit.created_utc)
+                warmup_tiers[limits_info["tier"]] += 1
+                warnings = check_warmup_thresholds(r.activity, limits_info.get("limits", {}))
+                if any("EXCEEDED" in w for w in warnings):
+                    limit_statuses["EXCEEDED"] += 1
+                elif any("WARNING" in w for w in warnings):
+                    limit_statuses["WARNING"] += 1
+                else:
+                    limit_statuses["OK"] += 1
+
+        if warmup_tiers:
+            logger.info("=== WARMUP STATUS ===")
+            for tier, count in warmup_tiers.most_common():
+                logger.info(f"  {tier}: {count}")
+            for status, count in limit_statuses.most_common():
+                logger.info(f"  {status}: {count}")
 
         # Log category breakdown by owner
         logger.info("=== BY OWNER ===")
